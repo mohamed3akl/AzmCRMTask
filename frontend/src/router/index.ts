@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import LoginView from '../views/LoginView.vue';
 import HomeView from '../views/HomeView.vue';
+import AppShell from '../layouts/AppShell.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -9,6 +10,7 @@ const router = createRouter({
     { path: '/login', name: 'login', component: LoginView },
     {
       path: '/',
+      component: AppShell,
       meta: { requiresAuth: true },
       children: [{ path: '', name: 'home', component: HomeView }],
     },
