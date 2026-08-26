@@ -1,5 +1,6 @@
 import express, { Express } from 'express';
 import cors from 'cors';
+import { errorHandler } from './middleware/errorHandler';
 
 export function createApp(): Express {
   const app = express();
@@ -10,5 +11,6 @@ export function createApp(): Express {
     res.json({ status: 'ok' });
   });
 
+  app.use(errorHandler);
   return app;
 }
