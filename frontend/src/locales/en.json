@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "Home", "users": "Users", "departments": "Departments", "logout": "Logout" },
+  "nav": { "home": "Home", "users": "Users", "departments": "Departments", "ticketCategories": "Ticket Categories", "logout": "Logout" },
   "login": { "title": "Sign in", "email": "Email", "password": "Password", "submit": "Sign in", "error": "Invalid email or password" },
   "home": { "welcome": "Welcome, {name}" },
   "users": {
@@ -12,5 +12,6 @@
     "active": "Active",
     "deactivate": "Deactivate"
   },
-  "departments": { "title": "Departments", "create": "New department", "nameEn": "Name (English)", "nameAr": "Name (Arabic)" }
+  "departments": { "title": "Departments", "create": "New department", "nameEn": "Name (English)", "nameAr": "Name (Arabic)" },
+  "ticketCategories": { "title": "Ticket Categories", "create": "New category", "nameEn": "Name (English)", "nameAr": "Name (Arabic)" }
 }

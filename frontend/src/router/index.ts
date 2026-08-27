@@ -5,6 +5,7 @@ import HomeView from '../views/HomeView.vue';
 import AppShell from '../layouts/AppShell.vue';
 import UserListView from '../views/users/UserListView.vue';
 import DepartmentListView from '../views/departments/DepartmentListView.vue';
+import TicketCategoryListView from '../views/ticketCategories/TicketCategoryListView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -18,6 +19,12 @@ const router = createRouter({
         { path: '', name: 'home', component: HomeView },
         { path: 'users', name: 'users', component: UserListView, meta: { roles: ['ADMIN'] } },
         { path: 'departments', name: 'departments', component: DepartmentListView, meta: { roles: ['ADMIN'] } },
+        {
+          path: 'ticket-categories',
+          name: 'ticket-categories',
+          component: TicketCategoryListView,
+          meta: { roles: ['ADMIN'] },
+        },
       ],
     },
   ],

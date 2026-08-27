@@ -5,6 +5,7 @@
         <v-list-item :title="$t('nav.home')" :to="{ name: 'home' }" />
         <v-list-item v-if="isAdmin" :title="$t('nav.users')" :to="{ name: 'users' }" />
         <v-list-item v-if="isAdmin" :title="$t('nav.departments')" :to="{ name: 'departments' }" />
+        <v-list-item v-if="isAdmin" :title="$t('nav.ticketCategories')" :to="{ name: 'ticket-categories' }" />
       </v-list>
     </v-navigation-drawer>
 

@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "الرئيسية", "users": "المستخدمون", "departments": "الأقسام", "logout": "تسجيل الخروج" },
+  "nav": { "home": "الرئيسية", "users": "المستخدمون", "departments": "الأقسام", "ticketCategories": "فئات التذاكر", "logout": "تسجيل الخروج" },
   "login": { "title": "تسجيل الدخول", "email": "البريد الإلكتروني", "password": "كلمة المرور", "submit": "تسجيل الدخول", "error": "بريد إلكتروني أو كلمة مرور غير صحيحة" },
   "home": { "welcome": "مرحبًا، {name}" },
   "users": {
@@ -12,5 +12,6 @@
     "active": "نشط",
     "deactivate": "إيقاف"
   },
-  "departments": { "title": "الأقسام", "create": "قسم جديد", "nameEn": "الاسم (إنجليزي)", "nameAr": "الاسم (عربي)" }
+  "departments": { "title": "الأقسام", "create": "قسم جديد", "nameEn": "الاسم (إنجليزي)", "nameAr": "الاسم (عربي)" },
+  "ticketCategories": { "title": "فئات التذاكر", "create": "فئة جديدة", "nameEn": "الاسم (إنجليزي)", "nameAr": "الاسم (عربي)" }
 }
