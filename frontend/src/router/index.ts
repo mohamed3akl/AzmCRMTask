@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import LoginView from '../views/LoginView.vue';
-import HomeView from '../views/HomeView.vue';
+import DashboardView from '../views/DashboardView.vue';
 import AppShell from '../layouts/AppShell.vue';
 import UserListView from '../views/users/UserListView.vue';
 import DepartmentListView from '../views/departments/DepartmentListView.vue';
@@ -19,7 +19,7 @@ const router = createRouter({
       component: AppShell,
       meta: { requiresAuth: true },
       children: [
-        { path: '', name: 'home', component: HomeView },
+        { path: '', name: 'home', component: DashboardView },
         { path: 'tickets', name: 'tickets', component: TicketListView },
         { path: 'tickets/new', name: 'ticket-new', component: TicketCreateView },
         { path: 'tickets/:id', name: 'ticket-detail', component: TicketDetailView },

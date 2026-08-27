@@ -41,7 +41,16 @@ export interface ApiTicketDetail extends ApiTicketSummary {
   events: ApiTicketEvent[];
 }
 
-export async function fetchTickets(filters: { status?: TicketStatus } = {}): Promise<ApiTicketSummary[]> {
+export async function fetchTickets(
+  filters: {
+    status?: TicketStatus;
+    assigneeId?: string;
+    departmentId?: string;
+    categoryId?: string;
+    unassigned?: boolean;
+    escalated?: boolean;
+  } = {}
+): Promise<ApiTicketSummary[]> {
   const res = await apiClient.get('/tickets', { params: filters });
   return res.data;
 }

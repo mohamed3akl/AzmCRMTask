@@ -2,6 +2,11 @@
   "nav": { "home": "الرئيسية", "tickets": "التذاكر", "users": "المستخدمون", "departments": "الأقسام", "ticketCategories": "فئات التذاكر", "logout": "تسجيل الخروج" },
   "login": { "title": "تسجيل الدخول", "email": "البريد الإلكتروني", "password": "كلمة المرور", "submit": "تسجيل الدخول", "error": "بريد إلكتروني أو كلمة مرور غير صحيحة" },
   "home": { "welcome": "مرحبًا، {name}" },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "myTickets": "تذاكري",
+    "noTickets": "لا توجد تذاكر مسندة إليك."
+  },
   "users": {
     "title": "المستخدمون",
     "create": "مستخدم جديد",

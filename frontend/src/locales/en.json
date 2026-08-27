@@ -2,6 +2,11 @@
   "nav": { "home": "Home", "tickets": "Tickets", "users": "Users", "departments": "Departments", "ticketCategories": "Ticket Categories", "logout": "Logout" },
   "login": { "title": "Sign in", "email": "Email", "password": "Password", "submit": "Sign in", "error": "Invalid email or password" },
   "home": { "welcome": "Welcome, {name}" },
+  "dashboard": {
+    "title": "Dashboard",
+    "myTickets": "My Tickets",
+    "noTickets": "No tickets assigned to you."
+  },
   "users": {
     "title": "Users",
     "create": "New user",
