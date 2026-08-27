@@ -112,6 +112,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import {
   fetchTicket,
   updateTicket,
@@ -132,6 +133,7 @@ import { useAuthStore } from '../../stores/auth';
 
 const route = useRoute();
 const auth = useAuthStore();
+const { locale } = useI18n();
 const ticket = ref<ApiTicketDetail | null>(null);
 const categories = ref<ApiTicketCategory[]>([]);
 const departments = ref<ApiDepartment[]>([]);
@@ -219,7 +221,7 @@ function insertQuickReply(id: string | null) {
   if (!id) return;
   const reply = quickReplies.value.find((r) => r.id === id);
   if (!reply) return;
-  const body = auth.currentUser?.locale === 'ar' ? reply.bodyAr : reply.bodyEn;
+  const body = locale.value === 'ar' ? reply.bodyAr : reply.bodyEn;
   noteText.value = noteText.value ? `${noteText.value} ${body}` : body;
 }
 

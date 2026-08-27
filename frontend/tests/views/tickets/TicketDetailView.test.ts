@@ -159,4 +159,46 @@ describe('TicketDetailView', () => {
     const noteInput = wrapper.find('[data-testid="note-input"] input').element as HTMLInputElement;
     expect(noteInput.value).toBe('Hello, thanks for reaching out!');
   });
+
+  it('inserts the quick reply body for the active UI locale, not the account locale', async () => {
+    vi.mocked(fetchQuickReplies).mockResolvedValue([
+      { id: 'qr1', titleEn: 'Greeting', titleAr: 'ترحيب', bodyEn: 'Hello, thanks for reaching out!', bodyAr: 'مرحبًا!' },
+    ]);
+
+    const auth = useAuthStore();
+    auth.currentUser = {
+      id: 'u1',
+      email: 'agent@example.com',
+      fullName: 'Agent Smith',
+      role: 'AGENT',
+      departmentId: null,
+      isActive: true,
+      locale: 'en',
+    };
+
+    const wrapper = mountWithPlugins(
+      TicketDetailView,
+      { global: { mocks: { $route: { params: { id: 'ticket-1' } } } } },
+      [{ path: '/', component: { template: '<div />' } }]
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    // Switch the active UI locale to Arabic while the account's stored
+    // locale preference stays 'en', simulating a user switching languages
+    // via the nav menu (AppShell's setLocale) without their account record
+    // changing. The inserted body must follow the active UI locale.
+    (wrapper.vm.$i18n as { locale: string }).locale = 'ar';
+    await wrapper.vm.$nextTick();
+
+    await wrapper.find('[data-testid="quick-reply-select"] input').trigger('mousedown');
+    await wrapper.vm.$nextTick();
+    const option = wrapper.find('[data-testid="quick-reply-option-qr1"]');
+    expect(option.exists()).toBe(true);
+    await option.trigger('click');
+    await wrapper.vm.$nextTick();
+
+    const noteInput = wrapper.find('[data-testid="note-input"] input').element as HTMLInputElement;
+    expect(noteInput.value).toBe('مرحبًا!');
+  });
 });
