@@ -33,6 +33,19 @@ async function createAgent() {
   return { user, token };
 }
 
+async function createSupervisor() {
+  const user = await prisma.user.create({
+    data: {
+      email: 'supervisor@example.com',
+      passwordHash: await hashPassword('password123'),
+      fullName: 'Supervisor User',
+      role: 'SUPERVISOR',
+    },
+  });
+  const token = signToken({ sub: user.id, role: user.role, departmentId: user.departmentId });
+  return { user, token };
+}
+
 describe('/api/users', () => {
   it('rejects unauthenticated requests', async () => {
     const res = await request(app).get('/api/users');
@@ -51,6 +64,21 @@ describe('/api/users', () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
     expect(res.body[0].passwordHash).toBeUndefined();
+  });
+
+  it('lets a supervisor list users too', async () => {
+    const { token } = await createSupervisor();
+    const res = await request(app).get('/api/users').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+  });
+
+  it('rejects a supervisor creating a user', async () => {
+    const { token } = await createSupervisor();
+    const res = await request(app)
+      .post('/api/users')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ email: 'nope@example.com', password: 'password123', fullName: 'Nope', role: 'AGENT' });
+    expect(res.status).toBe(403);
   });
 
   it('creates a user', async () => {

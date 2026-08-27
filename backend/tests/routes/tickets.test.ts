@@ -209,3 +209,76 @@ describe('PATCH /api/tickets/:id', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('POST /api/tickets/:id/assign', () => {
+  it('lets a supervisor assign a ticket to any agent', async () => {
+    const { user: supervisor, token: supervisorToken } = await createStaff('SUPERVISOR', 'supervisor@example.com');
+    const { user: agent } = await createStaff('AGENT', 'agent-assignee@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: { subject: 'Ticket', description: 'Desc', customerId: customer.id, createdById: supervisor.id },
+    });
+
+    const res = await request(app)
+      .post(`/api/tickets/${ticket.id}/assign`)
+      .set('Authorization', `Bearer ${supervisorToken}`)
+      .send({ assigneeId: agent.id });
+
+    expect(res.status).toBe(200);
+    expect(res.body.assignee.id).toBe(agent.id);
+  });
+
+  it('lets an agent claim an unassigned ticket for themselves', async () => {
+    const { user: agent, token } = await createStaff('AGENT', 'claiming-agent@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: { subject: 'Ticket', description: 'Desc', customerId: customer.id, createdById: agent.id },
+    });
+
+    const res = await request(app)
+      .post(`/api/tickets/${ticket.id}/assign`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ assigneeId: agent.id });
+
+    expect(res.status).toBe(200);
+    expect(res.body.assignee.id).toBe(agent.id);
+  });
+
+  it('lets an agent release their own assignment', async () => {
+    const { user: agent, token } = await createStaff('AGENT', 'releasing-agent@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: {
+        subject: 'Ticket',
+        description: 'Desc',
+        customerId: customer.id,
+        createdById: agent.id,
+        assigneeId: agent.id,
+      },
+    });
+
+    const res = await request(app)
+      .post(`/api/tickets/${ticket.id}/assign`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ assigneeId: null });
+
+    expect(res.status).toBe(200);
+    expect(res.body.assignee).toBeNull();
+  });
+
+  it('rejects an agent assigning a ticket to a different agent', async () => {
+    const { user: agentA, token: tokenA } = await createStaff('AGENT', 'agent-a@example.com');
+    const { user: agentB } = await createStaff('AGENT', 'agent-b@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: { subject: 'Ticket', description: 'Desc', customerId: customer.id, createdById: agentA.id },
+    });
+
+    const res = await request(app)
+      .post(`/api/tickets/${ticket.id}/assign`)
+      .set('Authorization', `Bearer ${tokenA}`)
+      .send({ assigneeId: agentB.id });
+
+    expect(res.status).toBe(403);
+  });
+});

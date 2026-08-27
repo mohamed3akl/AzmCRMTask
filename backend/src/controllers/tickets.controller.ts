@@ -41,3 +41,16 @@ export async function updateTicketHandler(req: Request, res: Response, next: Nex
     next(err);
   }
 }
+
+export async function assignTicketHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json(
+      await ticketsService.assignTicket(req.params.id as string, req.body.assigneeId, {
+        id: req.user!.id,
+        role: req.user!.role,
+      })
+    );
+  } catch (err) {
+    next(err);
+  }
+}

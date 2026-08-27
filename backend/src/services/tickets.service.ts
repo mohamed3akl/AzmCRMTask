@@ -1,4 +1,4 @@
-import { Prisma, TicketPriority, TicketStatus } from '@prisma/client';
+import { Prisma, Role, TicketPriority, TicketStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { HttpError } from '../lib/httpError';
 
@@ -130,6 +130,44 @@ export async function updateTicketFields(
       await tx.ticket.update({ where: { id }, data: updateData });
     }
   });
+
+  return getTicketById(id);
+}
+
+export async function assignTicket(
+  id: string,
+  assigneeId: string | null,
+  requester: { id: string; role: Role }
+): Promise<TicketDetail> {
+  const current = await prisma.ticket.findUnique({ where: { id } });
+  if (!current) {
+    throw new HttpError(404, 'NOT_FOUND', 'Ticket not found');
+  }
+
+  if (requester.role === 'AGENT') {
+    const claimingSelf = assigneeId === requester.id;
+    const releasingSelf = assigneeId === null && current.assigneeId === requester.id;
+    if (!claimingSelf && !releasingSelf) {
+      throw new HttpError(403, 'INVALID_ASSIGNEE', 'Agents may only claim or release their own assignment');
+    }
+  }
+
+  if (assigneeId === current.assigneeId) {
+    return getTicketById(id);
+  }
+
+  await prisma.$transaction([
+    prisma.ticket.update({ where: { id }, data: { assigneeId } }),
+    prisma.ticketEvent.create({
+      data: {
+        ticketId: id,
+        type: 'ASSIGNEE_CHANGED',
+        oldValue: current.assigneeId,
+        newValue: assigneeId,
+        authorId: requester.id,
+      },
+    }),
+  ]);
 
   return getTicketById(id);
 }

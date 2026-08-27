@@ -7,6 +7,7 @@ import {
   getTicketHandler,
   createTicketHandler,
   updateTicketHandler,
+  assignTicketHandler,
 } from '../controllers/tickets.controller';
 
 const priorityEnum = z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
@@ -39,6 +40,10 @@ const updateTicketSchema = z.object({
   departmentId: z.string().uuid().nullable().optional(),
 });
 
+const assignTicketSchema = z.object({
+  assigneeId: z.string().uuid().nullable(),
+});
+
 export const ticketsRouter = Router();
 
 ticketsRouter.use(authenticate);
@@ -46,3 +51,4 @@ ticketsRouter.get('/', listTicketsHandler);
 ticketsRouter.post('/', validate(createTicketSchema), createTicketHandler);
 ticketsRouter.get('/:id', getTicketHandler);
 ticketsRouter.patch('/:id', validate(updateTicketSchema), updateTicketHandler);
+ticketsRouter.post('/:id/assign', validate(assignTicketSchema), assignTicketHandler);
