@@ -6,6 +6,7 @@ import { vuetify } from './plugins/vuetify';
 import router from './router';
 import en from './locales/en.json';
 import ar from './locales/ar.json';
+import './style.css';
 
 const i18n = createI18n({
   legacy: false,
