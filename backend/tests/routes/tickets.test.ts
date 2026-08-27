@@ -141,3 +141,71 @@ describe('/api/tickets', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('PATCH /api/tickets/:id', () => {
+  it('updates status and logs a STATUS_CHANGED event', async () => {
+    const { user, token } = await createStaff('AGENT', 'updater@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: { subject: 'Ticket', description: 'Desc', customerId: customer.id, createdById: user.id },
+    });
+
+    const res = await request(app)
+      .patch(`/api/tickets/${ticket.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ status: 'IN_PROGRESS' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('IN_PROGRESS');
+    expect(res.body.events).toHaveLength(1);
+    expect(res.body.events[0].type).toBe('STATUS_CHANGED');
+    expect(res.body.events[0].oldValue).toBe('OPEN');
+    expect(res.body.events[0].newValue).toBe('IN_PROGRESS');
+  });
+
+  it('updates multiple fields at once and logs one event per changed field', async () => {
+    const { user, token } = await createStaff('AGENT', 'updater2@example.com');
+    const customer = await createCustomerFixture();
+    const category = await prisma.ticketCategory.create({ data: { nameEn: 'Billing', nameAr: 'الفواتير' } });
+    const ticket = await prisma.ticket.create({
+      data: { subject: 'Ticket', description: 'Desc', customerId: customer.id, createdById: user.id },
+    });
+
+    const res = await request(app)
+      .patch(`/api/tickets/${ticket.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ priority: 'URGENT', categoryId: category.id });
+
+    expect(res.status).toBe(200);
+    expect(res.body.priority).toBe('URGENT');
+    expect(res.body.category.id).toBe(category.id);
+    expect(res.body.events).toHaveLength(2);
+    const types = res.body.events.map((e: { type: string }) => e.type).sort();
+    expect(types).toEqual(['CATEGORY_CHANGED', 'PRIORITY_CHANGED']);
+  });
+
+  it('is a no-op when the submitted value matches the current value', async () => {
+    const { user, token } = await createStaff('AGENT', 'updater3@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: { subject: 'Ticket', description: 'Desc', customerId: customer.id, createdById: user.id },
+    });
+
+    const res = await request(app)
+      .patch(`/api/tickets/${ticket.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ status: 'OPEN' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.events).toHaveLength(0);
+  });
+
+  it('returns 404 for a non-existent ticket', async () => {
+    const { token } = await createStaff('AGENT', 'updater4@example.com');
+    const res = await request(app)
+      .patch('/api/tickets/00000000-0000-0000-0000-000000000000')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ status: 'CLOSED' });
+    expect(res.status).toBe(404);
+  });
+});

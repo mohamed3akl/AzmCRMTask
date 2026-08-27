@@ -2,9 +2,15 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/authenticate';
-import { listTicketsHandler, getTicketHandler, createTicketHandler } from '../controllers/tickets.controller';
+import {
+  listTicketsHandler,
+  getTicketHandler,
+  createTicketHandler,
+  updateTicketHandler,
+} from '../controllers/tickets.controller';
 
 const priorityEnum = z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
+const statusEnum = z.enum(['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']);
 
 const newCustomerSchema = z.object({
   fullName: z.string().min(1),
@@ -26,9 +32,17 @@ const createTicketSchema = z
     message: 'Provide exactly one of customerId or newCustomer',
   });
 
+const updateTicketSchema = z.object({
+  status: statusEnum.optional(),
+  priority: priorityEnum.optional(),
+  categoryId: z.string().uuid().nullable().optional(),
+  departmentId: z.string().uuid().nullable().optional(),
+});
+
 export const ticketsRouter = Router();
 
 ticketsRouter.use(authenticate);
 ticketsRouter.get('/', listTicketsHandler);
 ticketsRouter.post('/', validate(createTicketSchema), createTicketHandler);
 ticketsRouter.get('/:id', getTicketHandler);
+ticketsRouter.patch('/:id', validate(updateTicketSchema), updateTicketHandler);

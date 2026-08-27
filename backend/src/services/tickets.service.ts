@@ -82,3 +82,54 @@ export async function createTicket(
 
   return getTicketById(ticket.id);
 }
+
+export async function updateTicketFields(
+  id: string,
+  data: {
+    status?: TicketStatus;
+    priority?: TicketPriority;
+    categoryId?: string | null;
+    departmentId?: string | null;
+  },
+  authorId: string
+): Promise<TicketDetail> {
+  const current = await prisma.ticket.findUnique({ where: { id } });
+  if (!current) {
+    throw new HttpError(404, 'NOT_FOUND', 'Ticket not found');
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const updateData: Prisma.TicketUncheckedUpdateInput = {};
+
+    if (data.status !== undefined && data.status !== current.status) {
+      updateData.status = data.status;
+      await tx.ticketEvent.create({
+        data: { ticketId: id, type: 'STATUS_CHANGED', oldValue: current.status, newValue: data.status, authorId },
+      });
+    }
+    if (data.priority !== undefined && data.priority !== current.priority) {
+      updateData.priority = data.priority;
+      await tx.ticketEvent.create({
+        data: { ticketId: id, type: 'PRIORITY_CHANGED', oldValue: current.priority, newValue: data.priority, authorId },
+      });
+    }
+    if (data.categoryId !== undefined && data.categoryId !== current.categoryId) {
+      updateData.categoryId = data.categoryId;
+      await tx.ticketEvent.create({
+        data: { ticketId: id, type: 'CATEGORY_CHANGED', oldValue: current.categoryId, newValue: data.categoryId, authorId },
+      });
+    }
+    if (data.departmentId !== undefined && data.departmentId !== current.departmentId) {
+      updateData.departmentId = data.departmentId;
+      await tx.ticketEvent.create({
+        data: { ticketId: id, type: 'DEPARTMENT_CHANGED', oldValue: current.departmentId, newValue: data.departmentId, authorId },
+      });
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      await tx.ticket.update({ where: { id }, data: updateData });
+    }
+  });
+
+  return getTicketById(id);
+}

@@ -33,3 +33,11 @@ export async function createTicketHandler(req: Request, res: Response, next: Nex
     next(err);
   }
 }
+
+export async function updateTicketHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json(await ticketsService.updateTicketFields(req.params.id as string, req.body, req.user!.id));
+  } catch (err) {
+    next(err);
+  }
+}
