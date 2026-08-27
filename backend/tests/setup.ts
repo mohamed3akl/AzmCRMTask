@@ -11,6 +11,7 @@ beforeEach(async () => {
   await prisma.ticket.deleteMany();
   await prisma.customer.deleteMany();
   await prisma.ticketCategory.deleteMany();
+  await prisma.quickReply.deleteMany();
   await prisma.user.deleteMany();
   await prisma.department.deleteMany();
 });

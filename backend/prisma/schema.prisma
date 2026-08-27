@@ -85,6 +85,16 @@ model TicketCategory {
   updatedAt DateTime @updatedAt
 }
 
+model QuickReply {
+  id        String   @id @default(uuid())
+  titleEn   String
+  titleAr   String
+  bodyEn    String
+  bodyAr    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Ticket {
   id           String         @id @default(uuid())
   subject      String
