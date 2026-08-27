@@ -20,3 +20,16 @@ export async function fetchTickets(filters: { status?: TicketStatus } = {}): Pro
   const res = await apiClient.get('/tickets', { params: filters });
   return res.data;
 }
+
+export async function createTicket(data: {
+  subject: string;
+  description: string;
+  customerId?: string;
+  newCustomer?: { fullName: string; email?: string; phone?: string };
+  categoryId?: string | null;
+  departmentId?: string | null;
+  priority?: TicketPriority;
+}): Promise<{ id: string }> {
+  const res = await apiClient.post('/tickets', data);
+  return res.data;
+}

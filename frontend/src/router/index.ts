@@ -7,6 +7,7 @@ import UserListView from '../views/users/UserListView.vue';
 import DepartmentListView from '../views/departments/DepartmentListView.vue';
 import TicketCategoryListView from '../views/ticketCategories/TicketCategoryListView.vue';
 import TicketListView from '../views/tickets/TicketListView.vue';
+import TicketCreateView from '../views/tickets/TicketCreateView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -19,6 +20,7 @@ const router = createRouter({
       children: [
         { path: '', name: 'home', component: HomeView },
         { path: 'tickets', name: 'tickets', component: TicketListView },
+        { path: 'tickets/new', name: 'ticket-new', component: TicketCreateView },
         { path: 'users', name: 'users', component: UserListView, meta: { roles: ['ADMIN'] } },
         { path: 'departments', name: 'departments', component: DepartmentListView, meta: { roles: ['ADMIN'] } },
         {
