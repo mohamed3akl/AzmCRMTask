@@ -13,7 +13,7 @@
   --colors-canvas: #ffffff;
   --colors-surface-soft: #f7f7f7;
   --colors-surface-strong: #f2f2f2;
-  
+
   --rounded-xs: 4px;
   --rounded-sm: 8px;
   --rounded-md: 14px;
@@ -27,13 +27,13 @@
   --spacing-lg: 24px;
   --spacing-xl: 32px;
 
-  --airbnb-shadow: rgba(0, 0, 0, 0.02) 0px 0px 0px 1px, 
-                   rgba(0, 0, 0, 0.04) 0px 2px 6px 0px, 
-                   rgba(0, 0, 0, 0.1) 0px 4px 8px 0px;
+  --airbnb-shadow: rgba(0, 0, 0, 0.02) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.04) 0px 2px 6px 0px,
+    rgba(0, 0, 0, 0.1) 0px 4px 8px 0px;
 }
 
 /* Global Font Overrides */
-body, 
+body,
 .v-application {
   font-family: 'Inter', -apple-system, Circular, system-ui, Roboto, "Helvetica Neue", sans-serif !important;
   background-color: var(--colors-canvas) !important;
@@ -41,7 +41,13 @@ body,
 }
 
 /* Headings and Titles */
-h1, h2, h3, .text-h4, .text-h5, .text-h6, .v-toolbar-title {
+h1,
+h2,
+h3,
+.text-h4,
+.text-h5,
+.text-h6,
+.v-toolbar-title {
   color: var(--colors-ink) !important;
   font-weight: 600 !important;
   letter-spacing: -0.02em !important;
@@ -62,9 +68,9 @@ h1, h2, h3, .text-h4, .text-h5, .text-h6, .v-toolbar-title {
 
 .v-card:hover {
   transform: translateY(-2px);
-  box-shadow: rgba(0, 0, 0, 0.04) 0px 0px 0px 1px, 
-              rgba(0, 0, 0, 0.08) 0px 4px 12px 0px, 
-              rgba(0, 0, 0, 0.15) 0px 8px 16px 0px !important;
+  box-shadow: rgba(0, 0, 0, 0.04) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.08) 0px 4px 12px 0px,
+    rgba(0, 0, 0, 0.15) 0px 8px 16px 0px !important;
 }
 
 /* Vuetify Button Overrides */
@@ -77,13 +83,13 @@ h1, h2, h3, .text-h4, .text-h5, .text-h6, .v-toolbar-title {
   transition: background-color 0.2s ease, transform 0.1s ease !important;
 }
 
-.v-btn--variant-elevated, 
+.v-btn--variant-elevated,
 .v-btn--variant-flat {
   background-color: var(--colors-primary) !important;
   color: var(--colors-canvas) !important;
 }
 
-.v-btn--variant-elevated:active, 
+.v-btn--variant-elevated:active,
 .v-btn--variant-flat:active {
   background-color: var(--colors-primary-active) !important;
 }

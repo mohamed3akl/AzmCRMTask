@@ -33,9 +33,10 @@ describe('AppShell', () => {
       { path: '/ticket-categories', name: 'ticket-categories', component: { template: '<div />' } },
     ]);
 
-    const arButton = wrapper.findAll('button').find((btn) => btn.text() === 'AR');
-    expect(arButton).toBeTruthy();
-    await arButton!.trigger('click');
+    await wrapper.find('[data-testid="language-menu-activator"]').trigger('click');
+    const arItem = wrapper.find('[data-testid="lang-ar-item"]');
+    expect(arItem.exists()).toBe(true);
+    await arItem.trigger('click');
 
     expect(document.documentElement.dir).toBe('rtl');
     expect(document.documentElement.lang).toBe('ar');

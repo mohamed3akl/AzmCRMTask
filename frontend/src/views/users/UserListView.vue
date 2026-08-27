@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <div class="d-flex justify-space-between align-center mb-4">
       <h1>{{ $t('users.title') }}</h1>
       <v-btn color="primary" @click="openCreate">{{ $t('users.create') }}</v-btn>

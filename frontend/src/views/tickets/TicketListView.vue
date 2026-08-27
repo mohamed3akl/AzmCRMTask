@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <div class="d-flex justify-space-between align-center mb-4">
       <h1>{{ $t('tickets.title') }}</h1>
       <v-btn color="primary" :to="{ name: 'ticket-new' }">{{ $t('tickets.create') }}</v-btn>

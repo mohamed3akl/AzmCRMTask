@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <h1 class="mb-4">{{ $t('tickets.create') }}</h1>
     <form @submit.prevent="submit">
       <v-autocomplete

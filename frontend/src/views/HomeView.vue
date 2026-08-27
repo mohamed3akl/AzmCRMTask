@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <h1>{{ $t('home.welcome', { name: auth.currentUser?.fullName }) }}</h1>
   </v-container>
 </template>

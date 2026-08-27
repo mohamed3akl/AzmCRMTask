@@ -1,8 +1,7 @@
 <template>
   <v-app>
     <v-navigation-drawer permanent>
-      <div class="d-flex align-center px-4 py-4" style="border-bottom: 1px solid rgba(0, 0, 0, 0.12)">
-        <v-icon color="primary" class="me-2" size="28">mdi-headset</v-icon>
+      <div class="d-flex align-center px-4 py-5" style="border-bottom: 1px solid rgba(0, 0, 0, 0.12)">
         <span class="text-h6 font-weight-black text-primary" style="letter-spacing: 0.5px;">AzmCRM</span>
       </div>
       <v-list>
@@ -16,10 +15,21 @@
 
     <v-app-bar>
       <v-spacer />
-      <v-btn-toggle :model-value="currentLocale" mandatory density="compact" class="mr-4">
-        <v-btn value="en" @click="setLocale('en')">EN</v-btn>
-        <v-btn value="ar" @click="setLocale('ar')">AR</v-btn>
-      </v-btn-toggle>
+      <v-menu>
+        <template #activator="{ props }">
+          <v-btn icon v-bind="props" class="mr-4" data-testid="language-menu-activator">
+            <v-icon>mdi-translate</v-icon>
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item @click="setLocale('en')" data-testid="lang-en-item">
+            <v-list-item-title>EN</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="setLocale('ar')" data-testid="lang-ar-item">
+            <v-list-item-title>AR</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
       <v-menu>
         <template #activator="{ props }">
           <v-btn v-bind="props" data-testid="user-menu-activator">{{ auth.currentUser?.fullName }}</v-btn>

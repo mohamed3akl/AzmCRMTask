@@ -1,5 +1,5 @@
 <template>
-  <v-container v-if="ticket">
+  <v-container fluid v-if="ticket">
     <div class="d-flex justify-space-between align-center mb-4">
       <h1>{{ ticket.subject }}</h1>
       <v-chip v-if="ticket.isEscalated" color="error">{{ $t('tickets.escalated') }}</v-chip>
