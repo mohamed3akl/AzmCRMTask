@@ -417,3 +417,50 @@ describe('POST /api/tickets/:id/notes', () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe('GET /api/tickets filters', () => {
+  it('filters unassigned tickets', async () => {
+    const { user, token } = await createStaff('AGENT', 'filter1@example.com');
+    const { user: agent2 } = await createStaff('AGENT', 'filter1b@example.com');
+    const customer = await createCustomerFixture();
+    await prisma.ticket.create({
+      data: { subject: 'Unassigned', description: 'Desc', customerId: customer.id, createdById: user.id },
+    });
+    await prisma.ticket.create({
+      data: {
+        subject: 'Assigned',
+        description: 'Desc',
+        customerId: customer.id,
+        createdById: user.id,
+        assigneeId: agent2.id,
+      },
+    });
+
+    const res = await request(app).get('/api/tickets?unassigned=true').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].subject).toBe('Unassigned');
+  });
+
+  it('filters escalated tickets', async () => {
+    const { user, token } = await createStaff('AGENT', 'filter2@example.com');
+    const customer = await createCustomerFixture();
+    await prisma.ticket.create({
+      data: { subject: 'Normal', description: 'Desc', customerId: customer.id, createdById: user.id },
+    });
+    await prisma.ticket.create({
+      data: {
+        subject: 'Escalated',
+        description: 'Desc',
+        customerId: customer.id,
+        createdById: user.id,
+        isEscalated: true,
+      },
+    });
+
+    const res = await request(app).get('/api/tickets?escalated=true').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].subject).toBe('Escalated');
+  });
+});

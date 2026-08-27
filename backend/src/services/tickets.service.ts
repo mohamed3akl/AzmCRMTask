@@ -1,4 +1,4 @@
-import { Prisma, Role, TicketPriority, TicketStatus } from '@prisma/client';
+import { Prisma, Role, TicketEventType, TicketPriority, TicketStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { HttpError } from '../lib/httpError';
 
@@ -26,13 +26,16 @@ export async function listTickets(filters: {
   assigneeId?: string;
   departmentId?: string;
   categoryId?: string;
+  unassigned?: boolean;
+  escalated?: boolean;
 }): Promise<TicketWithRelations[]> {
   return prisma.ticket.findMany({
     where: {
       status: filters.status,
-      assigneeId: filters.assigneeId,
+      assigneeId: filters.unassigned ? null : filters.assigneeId,
       departmentId: filters.departmentId,
       categoryId: filters.categoryId,
+      isEscalated: filters.escalated ? true : undefined,
     },
     include: ticketInclude,
     orderBy: { createdAt: 'desc' },
@@ -219,4 +222,33 @@ export async function addTicketNote(id: string, note: string, authorId: string):
     data: { ticketId: id, type: 'NOTE_ADDED', note, authorId },
   });
   return getTicketById(id);
+}
+
+export interface RecentTicketEvent {
+  id: string;
+  type: TicketEventType;
+  oldValue: string | null;
+  newValue: string | null;
+  note: string | null;
+  createdAt: Date;
+  author: { id: string; fullName: string };
+  ticket: { id: string; subject: string };
+}
+
+export async function listRecentTicketEvents(limit?: number): Promise<RecentTicketEvent[]> {
+  const cappedLimit = Math.min(limit ?? 20, 50);
+  return prisma.ticketEvent.findMany({
+    take: cappedLimit,
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      type: true,
+      oldValue: true,
+      newValue: true,
+      note: true,
+      createdAt: true,
+      author: { select: { id: true, fullName: true } },
+      ticket: { select: { id: true, subject: true } },
+    },
+  });
 }

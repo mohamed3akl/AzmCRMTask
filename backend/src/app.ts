@@ -9,6 +9,7 @@ import { ticketCategoriesRouter } from './routes/ticketCategories.routes';
 import { ticketsRouter } from './routes/tickets.routes';
 import { tasksRouter } from './routes/tasks.routes';
 import { quickRepliesRouter } from './routes/quickReplies.routes';
+import { ticketEventsRouter } from './routes/ticketEvents.routes';
 
 export function createApp(): Express {
   const app = express();
@@ -27,6 +28,7 @@ export function createApp(): Express {
   app.use('/api/tickets', ticketsRouter);
   app.use('/api/tasks', tasksRouter);
   app.use('/api/quick-replies', quickRepliesRouter);
+  app.use('/api/ticket-events', ticketEventsRouter);
 
   app.use(errorHandler);
   return app;

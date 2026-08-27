@@ -4,13 +4,15 @@ import * as ticketsService from '../services/tickets.service';
 
 export async function listTicketsHandler(req: Request, res: Response, next: NextFunction) {
   try {
-    const { status, assigneeId, departmentId, categoryId } = req.query;
+    const { status, assigneeId, departmentId, categoryId, unassigned, escalated } = req.query;
     res.json(
       await ticketsService.listTickets({
         status: status as TicketStatus | undefined,
         assigneeId: assigneeId as string | undefined,
         departmentId: departmentId as string | undefined,
         categoryId: categoryId as string | undefined,
+        unassigned: unassigned === 'true',
+        escalated: escalated === 'true',
       })
     );
   } catch (err) {
