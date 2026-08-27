@@ -45,6 +45,8 @@ describe('/api/tickets', () => {
     expect(res.body.status).toBe('OPEN');
     expect(res.body.priority).toBe('MEDIUM');
     expect(res.body.customer.fullName).toBe('Jane Customer');
+    expect(res.body.source).toBe('MANUAL');
+    expect(res.body.createdBy.id).toBeDefined();
   });
 
   it('creates a ticket with an inline new customer', async () => {

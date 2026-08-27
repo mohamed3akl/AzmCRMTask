@@ -38,6 +38,11 @@ enum TicketEventType {
   NOTE_ADDED
 }
 
+enum TicketSource {
+  MANUAL
+  WEB_FORM
+}
+
 model Department {
   id        String   @id @default(uuid())
   nameEn    String
@@ -102,6 +107,7 @@ model Ticket {
   status       TicketStatus   @default(OPEN)
   priority     TicketPriority @default(MEDIUM)
   isEscalated  Boolean        @default(false)
+  source       TicketSource   @default(MANUAL)
 
   customer     Customer       @relation(fields: [customerId], references: [id])
   customerId   String
@@ -115,8 +121,8 @@ model Ticket {
   assignee     User?          @relation("TicketAssignee", fields: [assigneeId], references: [id])
   assigneeId   String?
 
-  createdBy    User           @relation("TicketCreatedBy", fields: [createdById], references: [id])
-  createdById  String
+  createdBy    User?          @relation("TicketCreatedBy", fields: [createdById], references: [id])
+  createdById  String?
 
   events       TicketEvent[]
   tasks        Task[]

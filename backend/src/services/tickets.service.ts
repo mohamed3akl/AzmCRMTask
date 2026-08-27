@@ -1,4 +1,4 @@
-import { Prisma, Role, TicketEventType, TicketPriority, TicketStatus } from '@prisma/client';
+import { Prisma, Role, TicketEventType, TicketPriority, TicketSource, TicketStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { HttpError } from '../lib/httpError';
 
@@ -60,7 +60,8 @@ export async function createTicket(
     departmentId?: string | null;
     priority?: TicketPriority;
   },
-  createdById: string
+  createdById: string | null,
+  source: TicketSource = 'MANUAL'
 ): Promise<TicketDetail> {
   let customerId = data.customerId;
   if (!customerId && data.newCustomer) {
@@ -79,7 +80,8 @@ export async function createTicket(
       categoryId: data.categoryId ?? null,
       departmentId: data.departmentId ?? null,
       priority: data.priority ?? 'MEDIUM',
-      createdById,
+      createdById: createdById ?? null,
+      source,
     },
   });
 
