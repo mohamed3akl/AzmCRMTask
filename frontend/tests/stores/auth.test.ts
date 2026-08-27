@@ -44,4 +44,19 @@ describe('auth store', () => {
     expect(store.currentUser).toBeNull();
     expect(localStorage.getItem('azmcrm_token')).toBeNull();
   });
+
+  it('does not throw and starts unauthenticated when localStorage access is blocked', () => {
+    const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+
+    try {
+      expect(() => useAuthStore()).not.toThrow();
+      const store = useAuthStore();
+      expect(store.isAuthenticated).toBe(false);
+      expect(store.currentUser).toBeNull();
+    } finally {
+      getItemSpy.mockRestore();
+    }
+  });
 });

@@ -9,8 +9,16 @@
         <v-text-field v-model="form.subject" data-testid="widget-subject" :label="$t('widget.subject')" />
         <v-textarea v-model="form.description" data-testid="widget-description" :label="$t('widget.description')" />
         <p v-if="error" data-testid="widget-error" class="text-error mb-2">{{ $t('widget.contactRequired') }}</p>
-        <p v-if="submitError" data-testid="widget-submit-error" class="text-error mb-2">{{ $t('widget.submitError') }}</p>
-        <v-btn type="submit" color="primary" data-testid="widget-submit">{{ $t('widget.submit') }}</v-btn>
+        <p v-if="submitErrorMessage" data-testid="widget-submit-error" class="text-error mb-2">{{ submitErrorMessage }}</p>
+        <v-btn
+          type="submit"
+          color="primary"
+          data-testid="widget-submit"
+          :loading="submitting"
+          :disabled="submitting"
+        >
+          {{ $t('widget.submit') }}
+        </v-btn>
       </form>
     </template>
     <template v-else>
@@ -27,19 +35,28 @@
 import { reactive, ref, onMounted, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useLocale } from 'vuetify';
+import axios from 'axios';
 import { submitPublicTicket } from '../api/publicTickets';
 
-const { locale: i18nLocale } = useI18n();
+const { t, locale: i18nLocale } = useI18n();
 const { current: vuetifyLocale } = useLocale();
 
 const form = reactive({ fullName: '', email: '', phone: '', subject: '', description: '' });
 const submitted = ref(false);
+const submitting = ref(false);
 const reference = ref('');
 const error = ref(false);
-const submitError = ref(false);
+const submitErrorMessage = ref('');
 
 function postHeight() {
   window.parent.postMessage({ source: 'azmcrm-widget', height: document.documentElement.scrollHeight }, '*');
+}
+
+function extractBackendErrorMessage(err: unknown): string | undefined {
+  if (axios.isAxiosError(err)) {
+    return err.response?.data?.error?.message;
+  }
+  return undefined;
 }
 
 async function submit() {
@@ -48,21 +65,24 @@ async function submit() {
     return;
   }
   error.value = false;
-  submitError.value = false;
+  submitErrorMessage.value = '';
+  submitting.value = true;
   try {
     const result = await submitPublicTicket({
-      fullName: form.fullName,
-      email: form.email || undefined,
-      phone: form.phone || undefined,
-      subject: form.subject,
-      description: form.description,
+      fullName: form.fullName.trim(),
+      email: form.email.trim() || undefined,
+      phone: form.phone.trim() || undefined,
+      subject: form.subject.trim(),
+      description: form.description.trim(),
     });
     reference.value = result.reference;
     submitted.value = true;
     await nextTick();
     postHeight();
-  } catch {
-    submitError.value = true;
+  } catch (err) {
+    submitErrorMessage.value = extractBackendErrorMessage(err) ?? t('widget.submitError');
+  } finally {
+    submitting.value = false;
   }
 }
 

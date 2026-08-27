@@ -80,7 +80,91 @@ describe('WidgetEmbedView', () => {
 
     expect(submitPublicTicket).toHaveBeenCalled();
     expect(wrapper.find('[data-testid="widget-submit-error"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="widget-submit-error"]').text()).toBe(
+      'Something went wrong submitting your request. Please try again.'
+    );
     expect(wrapper.find('[data-testid="widget-confirmation"]').exists()).toBe(false);
+  });
+
+  it('surfaces a specific backend validation message instead of the generic fallback', async () => {
+    vi.mocked(submitPublicTicket).mockRejectedValue({
+      isAxiosError: true,
+      response: { data: { error: { code: 'VALIDATION_ERROR', message: 'subject is required' } } },
+    });
+
+    const wrapper = mountWithPlugins(WidgetEmbedView, {}, [
+      { path: '/widget/embed', name: 'widget-embed', component: WidgetEmbedView },
+    ]);
+    await wrapper.vm.$nextTick();
+
+    await wrapper.find('[data-testid="widget-full-name"] input').setValue('Jane Customer');
+    await wrapper.find('[data-testid="widget-email"] input').setValue('jane@example.com');
+    await wrapper.find('[data-testid="widget-subject"] input').setValue('Cannot log in');
+    await wrapper.find('[data-testid="widget-description"] textarea').setValue('Getting an error');
+    await wrapper.find('form').trigger('submit.prevent');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    const errorText = wrapper.find('[data-testid="widget-submit-error"]').text();
+    expect(errorText).toBe('subject is required');
+    expect(errorText).not.toBe('Something went wrong submitting your request. Please try again.');
+  });
+
+  it('trims whitespace from text fields before sending to the API', async () => {
+    vi.mocked(submitPublicTicket).mockResolvedValue({ reference: 'A1B2C3D4' });
+
+    const wrapper = mountWithPlugins(WidgetEmbedView, {}, [
+      { path: '/widget/embed', name: 'widget-embed', component: WidgetEmbedView },
+    ]);
+    await wrapper.vm.$nextTick();
+
+    await wrapper.find('[data-testid="widget-full-name"] input').setValue('  Jane Customer  ');
+    await wrapper.find('[data-testid="widget-email"] input').setValue('  jane@example.com  ');
+    await wrapper.find('[data-testid="widget-subject"] input').setValue('  Cannot log in  ');
+    await wrapper.find('[data-testid="widget-description"] textarea').setValue('  Getting an error  ');
+    await wrapper.find('form').trigger('submit.prevent');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect(submitPublicTicket).toHaveBeenCalledWith({
+      fullName: 'Jane Customer',
+      email: 'jane@example.com',
+      phone: undefined,
+      subject: 'Cannot log in',
+      description: 'Getting an error',
+    });
+  });
+
+  it('shows a loading, disabled submit button while the request is in flight', async () => {
+    let resolveSubmit: (value: { reference: string }) => void;
+    vi.mocked(submitPublicTicket).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveSubmit = resolve;
+        })
+    );
+
+    const wrapper = mountWithPlugins(WidgetEmbedView, {}, [
+      { path: '/widget/embed', name: 'widget-embed', component: WidgetEmbedView },
+    ]);
+    await wrapper.vm.$nextTick();
+
+    await wrapper.find('[data-testid="widget-full-name"] input').setValue('Jane Customer');
+    await wrapper.find('[data-testid="widget-email"] input').setValue('jane@example.com');
+    await wrapper.find('[data-testid="widget-subject"] input').setValue('Cannot log in');
+    await wrapper.find('[data-testid="widget-description"] textarea').setValue('Getting an error');
+    await wrapper.find('form').trigger('submit.prevent');
+    await wrapper.vm.$nextTick();
+
+    const button = wrapper.find('[data-testid="widget-submit"]');
+    expect(button.attributes('disabled')).toBeDefined();
+    expect(button.classes()).toContain('v-btn--loading');
+
+    resolveSubmit!({ reference: 'A1B2C3D4' });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('[data-testid="widget-confirmation"]').exists()).toBe(true);
   });
 
   it('applies RTL layout when the locale query param is ar', async () => {

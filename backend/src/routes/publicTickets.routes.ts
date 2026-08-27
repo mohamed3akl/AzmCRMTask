@@ -6,11 +6,11 @@ import { createPublicTicketHandler } from '../controllers/publicTickets.controll
 
 const createPublicTicketSchema = z
   .object({
-    fullName: z.string().min(1),
+    fullName: z.string().min(1).max(200),
     email: z.string().email().optional(),
-    phone: z.string().min(1).optional(),
-    subject: z.string().min(1),
-    description: z.string().min(1),
+    phone: z.string().min(1).max(30).optional(),
+    subject: z.string().min(1).max(200),
+    description: z.string().min(1).max(5000),
   })
   .refine((data) => Boolean(data.email) || Boolean(data.phone), {
     message: 'Provide at least one of email or phone',

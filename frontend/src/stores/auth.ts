@@ -17,13 +17,25 @@ interface AuthState {
 }
 
 function loadStoredUser(): CurrentUser | null {
-  const raw = localStorage.getItem('azmcrm_user');
-  return raw ? (JSON.parse(raw) as CurrentUser) : null;
+  try {
+    const raw = localStorage.getItem('azmcrm_user');
+    return raw ? (JSON.parse(raw) as CurrentUser) : null;
+  } catch {
+    return null;
+  }
+}
+
+function loadStoredToken(): string | null {
+  try {
+    return localStorage.getItem('azmcrm_token');
+  } catch {
+    return null;
+  }
 }
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
-    token: localStorage.getItem('azmcrm_token'),
+    token: loadStoredToken(),
     currentUser: loadStoredUser(),
   }),
   getters: {
