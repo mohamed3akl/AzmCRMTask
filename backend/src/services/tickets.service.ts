@@ -145,7 +145,7 @@ export async function assignTicket(
   }
 
   if (requester.role === 'AGENT') {
-    const claimingSelf = assigneeId === requester.id;
+    const claimingSelf = assigneeId === requester.id && current.assigneeId === null;
     const releasingSelf = assigneeId === null && current.assigneeId === requester.id;
     if (!claimingSelf && !releasingSelf) {
       throw new HttpError(403, 'INVALID_ASSIGNEE', 'Agents may only claim or release their own assignment');

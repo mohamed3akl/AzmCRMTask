@@ -281,4 +281,26 @@ describe('POST /api/tickets/:id/assign', () => {
 
     expect(res.status).toBe(403);
   });
+
+  it('rejects an agent claiming a ticket already assigned to a different agent', async () => {
+    const { user: agentOwner } = await createStaff('AGENT', 'agent-owner@example.com');
+    const { user: agentThief, token: tokenThief } = await createStaff('AGENT', 'agent-thief@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: {
+        subject: 'Ticket',
+        description: 'Desc',
+        customerId: customer.id,
+        createdById: agentOwner.id,
+        assigneeId: agentOwner.id,
+      },
+    });
+
+    const res = await request(app)
+      .post(`/api/tickets/${ticket.id}/assign`)
+      .set('Authorization', `Bearer ${tokenThief}`)
+      .send({ assigneeId: agentThief.id });
+
+    expect(res.status).toBe(403);
+  });
 });
