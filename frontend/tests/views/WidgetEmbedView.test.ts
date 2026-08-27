@@ -62,6 +62,27 @@ describe('WidgetEmbedView', () => {
     expect(submitPublicTicket).not.toHaveBeenCalled();
   });
 
+  it('shows a submit error and stays on the form when the API call rejects', async () => {
+    vi.mocked(submitPublicTicket).mockRejectedValue(new Error('Network Error'));
+
+    const wrapper = mountWithPlugins(WidgetEmbedView, {}, [
+      { path: '/widget/embed', name: 'widget-embed', component: WidgetEmbedView },
+    ]);
+    await wrapper.vm.$nextTick();
+
+    await wrapper.find('[data-testid="widget-full-name"] input').setValue('Jane Customer');
+    await wrapper.find('[data-testid="widget-email"] input').setValue('jane@example.com');
+    await wrapper.find('[data-testid="widget-subject"] input').setValue('Cannot log in');
+    await wrapper.find('[data-testid="widget-description"] textarea').setValue('Getting an error');
+    await wrapper.find('form').trigger('submit.prevent');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect(submitPublicTicket).toHaveBeenCalled();
+    expect(wrapper.find('[data-testid="widget-submit-error"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="widget-confirmation"]').exists()).toBe(false);
+  });
+
   it('applies RTL layout when the locale query param is ar', async () => {
     window.history.pushState({}, '', '/widget/embed?locale=ar');
 

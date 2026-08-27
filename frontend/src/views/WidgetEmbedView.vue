@@ -9,6 +9,7 @@
         <v-text-field v-model="form.subject" data-testid="widget-subject" :label="$t('widget.subject')" />
         <v-textarea v-model="form.description" data-testid="widget-description" :label="$t('widget.description')" />
         <p v-if="error" data-testid="widget-error" class="text-error mb-2">{{ $t('widget.contactRequired') }}</p>
+        <p v-if="submitError" data-testid="widget-submit-error" class="text-error mb-2">{{ $t('widget.submitError') }}</p>
         <v-btn type="submit" color="primary" data-testid="widget-submit">{{ $t('widget.submit') }}</v-btn>
       </form>
     </template>
@@ -35,6 +36,7 @@ const form = reactive({ fullName: '', email: '', phone: '', subject: '', descrip
 const submitted = ref(false);
 const reference = ref('');
 const error = ref(false);
+const submitError = ref(false);
 
 function postHeight() {
   window.parent.postMessage({ source: 'azmcrm-widget', height: document.documentElement.scrollHeight }, '*');
@@ -46,17 +48,22 @@ async function submit() {
     return;
   }
   error.value = false;
-  const result = await submitPublicTicket({
-    fullName: form.fullName,
-    email: form.email || undefined,
-    phone: form.phone || undefined,
-    subject: form.subject,
-    description: form.description,
-  });
-  reference.value = result.reference;
-  submitted.value = true;
-  await nextTick();
-  postHeight();
+  submitError.value = false;
+  try {
+    const result = await submitPublicTicket({
+      fullName: form.fullName,
+      email: form.email || undefined,
+      phone: form.phone || undefined,
+      subject: form.subject,
+      description: form.description,
+    });
+    reference.value = result.reference;
+    submitted.value = true;
+    await nextTick();
+    postHeight();
+  } catch {
+    submitError.value = true;
+  }
 }
 
 onMounted(async () => {

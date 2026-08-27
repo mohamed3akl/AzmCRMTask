@@ -64,6 +64,7 @@
     "description": "How can we help?",
     "submit": "Submit",
     "contactRequired": "Please provide an email or phone number.",
+    "submitError": "Something went wrong submitting your request. Please try again.",
     "thanks": "Thanks, {name}!",
     "received": "Your request has been received.",
     "reference": "Reference: #{reference}"
