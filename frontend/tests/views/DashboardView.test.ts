@@ -6,7 +6,14 @@ vi.mock('../../src/api/tickets', () => ({
   fetchTickets: vi.fn(),
 }));
 
+vi.mock('../../src/api/tasks', () => ({
+  fetchTasks: vi.fn(),
+  createTask: vi.fn(),
+  updateTask: vi.fn(),
+}));
+
 import { fetchTickets } from '../../src/api/tickets';
+import { fetchTasks, createTask, updateTask } from '../../src/api/tasks';
 import { useAuthStore } from '../../src/stores/auth';
 import DashboardView from '../../src/views/DashboardView.vue';
 
@@ -33,6 +40,7 @@ describe('DashboardView', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.mocked(fetchTickets).mockResolvedValue([]);
+    vi.mocked(fetchTasks).mockResolvedValue([]);
   });
 
   it("renders the agent's assigned open tickets", async () => {
@@ -58,5 +66,42 @@ describe('DashboardView', () => {
 
     expect(wrapper.text()).toContain('Cannot log in');
     expect(fetchTickets).toHaveBeenCalledWith({ assigneeId: 'me' });
+  });
+
+  it('renders my tasks and lets the user add and complete one', async () => {
+    loginAs('AGENT');
+    vi.mocked(fetchTasks).mockResolvedValue([
+      { id: 'task1', title: 'Call back Jane', dueAt: null, isDone: false, ownerId: 'me', ticketId: null },
+    ]);
+    vi.mocked(createTask).mockResolvedValue({
+      id: 'task2',
+      title: 'Follow up',
+      dueAt: null,
+      isDone: false,
+      ownerId: 'me',
+      ticketId: null,
+    });
+    vi.mocked(updateTask).mockResolvedValue({
+      id: 'task1',
+      title: 'Call back Jane',
+      dueAt: null,
+      isDone: true,
+      ownerId: 'me',
+      ticketId: null,
+    });
+
+    const wrapper = mountWithPlugins(DashboardView, {}, dashboardRoutes);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.text()).toContain('Call back Jane');
+
+    await wrapper.find('[data-testid="new-task-title"] input').setValue('Follow up');
+    await wrapper.find('[data-testid="add-task-form"]').trigger('submit.prevent');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(createTask).toHaveBeenCalledWith({ title: 'Follow up' });
+
+    await wrapper.find('[data-testid="task-done-task1"]').trigger('click');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(updateTask).toHaveBeenCalledWith('task1', { isDone: true });
   });
 });

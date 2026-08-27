@@ -5,7 +5,14 @@
   "dashboard": {
     "title": "Dashboard",
     "myTickets": "My Tickets",
-    "noTickets": "No tickets assigned to you."
+    "noTickets": "No tickets assigned to you.",
+    "myTasks": "My Tasks",
+    "noTasks": "No open tasks."
+  },
+  "tasks": {
+    "newTask": "New task",
+    "add": "Add",
+    "markDone": "Done"
   },
   "users": {
     "title": "Users",

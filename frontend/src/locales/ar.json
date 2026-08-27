@@ -5,7 +5,14 @@
   "dashboard": {
     "title": "لوحة التحكم",
     "myTickets": "تذاكري",
-    "noTickets": "لا توجد تذاكر مسندة إليك."
+    "noTickets": "لا توجد تذاكر مسندة إليك.",
+    "myTasks": "مهامي",
+    "noTasks": "لا توجد مهام مفتوحة."
+  },
+  "tasks": {
+    "newTask": "مهمة جديدة",
+    "add": "إضافة",
+    "markDone": "إنجاز"
   },
   "users": {
     "title": "المستخدمون",
