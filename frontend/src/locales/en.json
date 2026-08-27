@@ -55,6 +55,19 @@
     "bodyEn": "Body (English)",
     "bodyAr": "Body (Arabic)"
   },
+  "widget": {
+    "title": "Contact us",
+    "fullName": "Full name",
+    "email": "Email",
+    "phone": "Phone (optional)",
+    "subject": "Subject",
+    "description": "How can we help?",
+    "submit": "Submit",
+    "contactRequired": "Please provide an email or phone number.",
+    "thanks": "Thanks, {name}!",
+    "received": "Your request has been received.",
+    "reference": "Reference: #{reference}"
+  },
   "tickets": {
     "title": "Tickets",
     "create": "New Ticket",

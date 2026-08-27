@@ -10,11 +10,13 @@ import QuickReplyListView from '../views/quickReplies/QuickReplyListView.vue';
 import TicketListView from '../views/tickets/TicketListView.vue';
 import TicketCreateView from '../views/tickets/TicketCreateView.vue';
 import TicketDetailView from '../views/tickets/TicketDetailView.vue';
+import WidgetEmbedView from '../views/WidgetEmbedView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/login', name: 'login', component: LoginView },
+    { path: '/widget/embed', name: 'widget-embed', component: WidgetEmbedView },
     {
       path: '/',
       component: AppShell,
