@@ -9,7 +9,17 @@
       <v-col cols="12" md="8">
         <p class="mb-4">{{ ticket.description }}</p>
 
-        <h2 class="text-h6 mb-2">{{ $t('tickets.timeline') }}</h2>
+        <v-text-field
+          v-model="noteText"
+          data-testid="note-input"
+          :label="$t('tickets.addNote')"
+          append-inner-icon="mdi-send"
+          @click:append-inner="submitNote"
+          @keyup.enter="submitNote"
+        />
+        <v-btn data-testid="add-note-button" class="d-none" @click="submitNote">{{ $t('tickets.addNote') }}</v-btn>
+
+        <h2 class="text-h6 mb-2 mt-4">{{ $t('tickets.timeline') }}</h2>
         <v-timeline density="compact" side="end">
           <v-timeline-item v-for="event in ticket.events" :key="event.id" size="small">
             <div>{{ describeEvent(event) }}</div>
@@ -19,27 +29,113 @@
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-list density="compact">
-          <v-list-item :title="$t('tickets.customer')" :subtitle="ticket.customer.fullName" />
-          <v-list-item :title="$t('tickets.status')" :subtitle="ticket.status" />
-          <v-list-item :title="$t('tickets.priority')" :subtitle="ticket.priority" />
+        <v-select
+          :model-value="ticket.status"
+          :items="statusOptions"
+          :label="$t('tickets.status')"
+          @update:model-value="onStatusChange"
+        />
+        <v-select
+          :model-value="ticket.priority"
+          :items="priorityOptions"
+          :label="$t('tickets.priority')"
+          @update:model-value="onPriorityChange"
+        />
+        <v-select
+          :model-value="ticket.category?.id ?? null"
+          :items="categories"
+          item-title="nameEn"
+          item-value="id"
+          :label="$t('tickets.category')"
+          clearable
+          @update:model-value="onCategoryChange"
+        />
+        <v-select
+          :model-value="ticket.department?.id ?? null"
+          :items="departments"
+          item-title="nameEn"
+          item-value="id"
+          :label="$t('tickets.department')"
+          clearable
+          @update:model-value="onDepartmentChange"
+        />
+
+        <v-select
+          v-if="canReassignFreely"
+          :model-value="ticket.assignee?.id ?? null"
+          :items="agents"
+          item-title="fullName"
+          item-value="id"
+          :label="$t('tickets.assignee')"
+          clearable
+          @update:model-value="onAssign"
+        />
+        <template v-else>
           <v-list-item :title="$t('tickets.assignee')" :subtitle="ticket.assignee?.fullName ?? '-'" />
-          <v-list-item :title="$t('tickets.category')" :subtitle="ticket.category?.nameEn ?? '-'" />
-          <v-list-item :title="$t('tickets.department')" :subtitle="ticket.department?.nameEn ?? '-'" />
+          <v-btn v-if="!ticket.assignee" size="small" @click="claim">{{ $t('tickets.claim') }}</v-btn>
+          <v-btn v-else-if="isAssignedToMe" size="small" @click="release">{{ $t('tickets.release') }}</v-btn>
+        </template>
+
+        <v-btn v-if="!ticket.isEscalated" class="mt-4" color="warning" block @click="escalateDialogOpen = true">
+          {{ $t('tickets.escalate') }}
+        </v-btn>
+        <v-btn v-else class="mt-4" block @click="unescalate">{{ $t('tickets.unescalate') }}</v-btn>
+
+        <v-list density="compact" class="mt-4">
+          <v-list-item :title="$t('tickets.customer')" :subtitle="ticket.customer.fullName" />
           <v-list-item :title="$t('tickets.createdBy')" :subtitle="ticket.createdBy.fullName" />
         </v-list>
       </v-col>
     </v-row>
+
+    <v-dialog v-model="escalateDialogOpen" max-width="480">
+      <v-card :title="$t('tickets.escalate')">
+        <v-card-text>
+          <v-text-field v-model="escalateNote" :label="$t('tickets.escalateNote')" />
+          <v-btn color="warning" @click="escalate">{{ $t('tickets.escalate') }}</v-btn>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { fetchTicket, type ApiTicketDetail, type ApiTicketEvent } from '../../api/tickets';
+import {
+  fetchTicket,
+  updateTicket,
+  assignTicket,
+  escalateTicket,
+  unescalateTicket,
+  addTicketNote,
+  type ApiTicketDetail,
+  type ApiTicketEvent,
+  type TicketStatus,
+  type TicketPriority,
+} from '../../api/tickets';
+import { fetchTicketCategories, type ApiTicketCategory } from '../../api/ticketCategories';
+import { fetchDepartments, type ApiDepartment } from '../../api/departments';
+import { fetchUsers, type ApiUser } from '../../api/users';
+import { useAuthStore } from '../../stores/auth';
 
 const route = useRoute();
+const auth = useAuthStore();
 const ticket = ref<ApiTicketDetail | null>(null);
+const categories = ref<ApiTicketCategory[]>([]);
+const departments = ref<ApiDepartment[]>([]);
+const agents = ref<ApiUser[]>([]);
+const noteText = ref('');
+const escalateDialogOpen = ref(false);
+const escalateNote = ref('');
+
+const statusOptions: TicketStatus[] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
+const priorityOptions: TicketPriority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+
+const canReassignFreely = computed(
+  () => auth.currentUser?.role === 'ADMIN' || auth.currentUser?.role === 'SUPERVISOR'
+);
+const isAssignedToMe = computed(() => ticket.value?.assignee?.id === auth.currentUser?.id);
 
 const eventDescriptions: Record<string, (event: ApiTicketEvent) => string> = {
   STATUS_CHANGED: (e) => `Status changed from ${e.oldValue} to ${e.newValue}`,
@@ -60,5 +156,56 @@ async function load() {
   ticket.value = await fetchTicket(route.params.id as string);
 }
 
-onMounted(load);
+async function onStatusChange(value: TicketStatus) {
+  ticket.value = await updateTicket(ticket.value!.id, { status: value });
+}
+
+async function onPriorityChange(value: TicketPriority) {
+  ticket.value = await updateTicket(ticket.value!.id, { priority: value });
+}
+
+async function onCategoryChange(value: string | null) {
+  ticket.value = await updateTicket(ticket.value!.id, { categoryId: value });
+}
+
+async function onDepartmentChange(value: string | null) {
+  ticket.value = await updateTicket(ticket.value!.id, { departmentId: value });
+}
+
+async function onAssign(value: string | null) {
+  ticket.value = await assignTicket(ticket.value!.id, value);
+}
+
+async function claim() {
+  ticket.value = await assignTicket(ticket.value!.id, auth.currentUser!.id);
+}
+
+async function release() {
+  ticket.value = await assignTicket(ticket.value!.id, null);
+}
+
+async function escalate() {
+  ticket.value = await escalateTicket(ticket.value!.id, escalateNote.value || undefined);
+  escalateDialogOpen.value = false;
+  escalateNote.value = '';
+}
+
+async function unescalate() {
+  ticket.value = await unescalateTicket(ticket.value!.id);
+}
+
+async function submitNote() {
+  if (!noteText.value.trim()) return;
+  ticket.value = await addTicketNote(ticket.value!.id, noteText.value);
+  noteText.value = '';
+}
+
+onMounted(async () => {
+  await load();
+  categories.value = await fetchTicketCategories();
+  departments.value = await fetchDepartments();
+  if (canReassignFreely.value) {
+    agents.value = await fetchUsers();
+  }
+});
 </script>

@@ -63,3 +63,31 @@ export async function fetchTicket(id: string): Promise<ApiTicketDetail> {
   const res = await apiClient.get(`/tickets/${id}`);
   return res.data;
 }
+
+export async function updateTicket(
+  id: string,
+  data: Partial<{ status: TicketStatus; priority: TicketPriority; categoryId: string | null; departmentId: string | null }>
+): Promise<ApiTicketDetail> {
+  const res = await apiClient.patch(`/tickets/${id}`, data);
+  return res.data;
+}
+
+export async function assignTicket(id: string, assigneeId: string | null): Promise<ApiTicketDetail> {
+  const res = await apiClient.post(`/tickets/${id}/assign`, { assigneeId });
+  return res.data;
+}
+
+export async function escalateTicket(id: string, note?: string): Promise<ApiTicketDetail> {
+  const res = await apiClient.post(`/tickets/${id}/escalate`, { note });
+  return res.data;
+}
+
+export async function unescalateTicket(id: string): Promise<ApiTicketDetail> {
+  const res = await apiClient.post(`/tickets/${id}/unescalate`);
+  return res.data;
+}
+
+export async function addTicketNote(id: string, note: string): Promise<ApiTicketDetail> {
+  const res = await apiClient.post(`/tickets/${id}/notes`, { note });
+  return res.data;
+}
