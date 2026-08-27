@@ -115,7 +115,15 @@ async function submit() {
 }
 
 onMounted(async () => {
-  categories.value = await fetchTicketCategories();
-  departments.value = await fetchDepartments();
+  try {
+    categories.value = await fetchTicketCategories();
+  } catch {
+    // Non-fatal: category list may be empty if unavailable; the select just stays empty.
+  }
+  try {
+    departments.value = await fetchDepartments();
+  } catch {
+    // Non-fatal: department list may be empty if unavailable; the select just stays empty.
+  }
 });
 </script>

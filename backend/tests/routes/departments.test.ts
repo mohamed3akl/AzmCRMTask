@@ -20,10 +20,48 @@ async function createAdmin() {
   return { user, token };
 }
 
+async function createAgent() {
+  const user = await prisma.user.create({
+    data: {
+      email: 'agent@example.com',
+      passwordHash: await hashPassword('password123'),
+      fullName: 'Agent User',
+      role: 'AGENT',
+    },
+  });
+  const token = signToken({ sub: user.id, role: user.role, departmentId: user.departmentId });
+  return { user, token };
+}
+
 describe('/api/departments', () => {
   it('rejects unauthenticated requests', async () => {
     const res = await request(app).get('/api/departments');
     expect(res.status).toBe(401);
+  });
+
+  it('lets an agent list departments too', async () => {
+    const { token } = await createAgent();
+    const res = await request(app).get('/api/departments').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+  });
+
+  it('rejects a non-admin creating a department', async () => {
+    const { token } = await createAgent();
+    const res = await request(app)
+      .post('/api/departments')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ nameEn: 'Support', nameAr: 'الدعم' });
+    expect(res.status).toBe(403);
+  });
+
+  it('rejects a non-admin updating a department', async () => {
+    const { token } = await createAgent();
+    const dept = await prisma.department.create({ data: { nameEn: 'Sales', nameAr: 'المبيعات' } });
+    const res = await request(app)
+      .patch(`/api/departments/${dept.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ nameEn: 'Nope' });
+    expect(res.status).toBe(403);
   });
 
   it('creates and lists departments', async () => {

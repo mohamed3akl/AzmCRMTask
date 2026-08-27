@@ -21,7 +21,12 @@ const updateDepartmentSchema = z.object({
 
 export const departmentsRouter = Router();
 
-departmentsRouter.use(authenticate, authorize('ADMIN'));
+departmentsRouter.use(authenticate);
 departmentsRouter.get('/', listDepartmentsHandler);
-departmentsRouter.post('/', validate(createDepartmentSchema), createDepartmentHandler);
-departmentsRouter.patch('/:id', validate(updateDepartmentSchema), updateDepartmentHandler);
+departmentsRouter.post('/', authorize('ADMIN'), validate(createDepartmentSchema), createDepartmentHandler);
+departmentsRouter.patch(
+  '/:id',
+  authorize('ADMIN'),
+  validate(updateDepartmentSchema),
+  updateDepartmentHandler
+);

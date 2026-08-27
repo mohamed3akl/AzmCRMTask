@@ -202,10 +202,22 @@ async function submitNote() {
 
 onMounted(async () => {
   await load();
-  categories.value = await fetchTicketCategories();
-  departments.value = await fetchDepartments();
+  try {
+    categories.value = await fetchTicketCategories();
+  } catch {
+    // Non-fatal: category list may be empty if unavailable; the select just stays empty.
+  }
+  try {
+    departments.value = await fetchDepartments();
+  } catch {
+    // Non-fatal: department list may be empty if unavailable; the select just stays empty.
+  }
   if (canReassignFreely.value) {
-    agents.value = await fetchUsers();
+    try {
+      agents.value = await fetchUsers();
+    } catch {
+      // Non-fatal: assignee list may be empty if unavailable.
+    }
   }
 });
 </script>

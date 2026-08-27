@@ -21,7 +21,12 @@ const updateTicketCategorySchema = z.object({
 
 export const ticketCategoriesRouter = Router();
 
-ticketCategoriesRouter.use(authenticate, authorize('ADMIN'));
+ticketCategoriesRouter.use(authenticate);
 ticketCategoriesRouter.get('/', listTicketCategoriesHandler);
-ticketCategoriesRouter.post('/', validate(createTicketCategorySchema), createTicketCategoryHandler);
-ticketCategoriesRouter.patch('/:id', validate(updateTicketCategorySchema), updateTicketCategoryHandler);
+ticketCategoriesRouter.post('/', authorize('ADMIN'), validate(createTicketCategorySchema), createTicketCategoryHandler);
+ticketCategoriesRouter.patch(
+  '/:id',
+  authorize('ADMIN'),
+  validate(updateTicketCategorySchema),
+  updateTicketCategoryHandler
+);

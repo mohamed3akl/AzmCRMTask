@@ -39,9 +39,28 @@ describe('/api/ticket-categories', () => {
     expect(res.status).toBe(401);
   });
 
-  it('rejects non-admin requests', async () => {
+  it('lets an agent list ticket categories too', async () => {
     const { token } = await createAgent();
     const res = await request(app).get('/api/ticket-categories').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+  });
+
+  it('rejects a non-admin creating a ticket category', async () => {
+    const { token } = await createAgent();
+    const res = await request(app)
+      .post('/api/ticket-categories')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ nameEn: 'Billing', nameAr: 'الفواتير' });
+    expect(res.status).toBe(403);
+  });
+
+  it('rejects a non-admin updating a ticket category', async () => {
+    const { token } = await createAgent();
+    const category = await prisma.ticketCategory.create({ data: { nameEn: 'Technical', nameAr: 'تقني' } });
+    const res = await request(app)
+      .patch(`/api/ticket-categories/${category.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ nameEn: 'Nope' });
     expect(res.status).toBe(403);
   });
 
