@@ -37,7 +37,7 @@ export interface ApiTicketEvent {
 
 export interface ApiTicketDetail extends ApiTicketSummary {
   description: string;
-  createdBy: { id: string; fullName: string };
+  createdBy: { id: string; fullName: string } | null;
   events: ApiTicketEvent[];
 }
 

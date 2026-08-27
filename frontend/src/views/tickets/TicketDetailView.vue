@@ -93,7 +93,7 @@
 
         <v-list density="compact" class="mt-4">
           <v-list-item :title="$t('tickets.customer')" :subtitle="ticket.customer.fullName" />
-          <v-list-item :title="$t('tickets.createdBy')" :subtitle="ticket.createdBy.fullName" />
+          <v-list-item :title="$t('tickets.createdBy')" :subtitle="ticket.createdBy?.fullName ?? '-'" />
         </v-list>
       </v-col>
     </v-row>

@@ -202,4 +202,18 @@ describe('TicketDetailView', () => {
     const noteInput = wrapper.find('[data-testid="note-input"] input').element as HTMLInputElement;
     expect(noteInput.value).toBe('مرحبًا!');
   });
+
+  it('renders without crashing when the ticket has no creator (e.g. a web-form submission)', async () => {
+    vi.mocked(fetchTicket).mockResolvedValue({ ...baseTicket, createdBy: null });
+
+    const wrapper = mountWithPlugins(
+      TicketDetailView,
+      { global: { mocks: { $route: { params: { id: 'ticket-1' } } } } },
+      [{ path: '/', component: { template: '<div />' } }]
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain('Cannot log in');
+  });
 });
