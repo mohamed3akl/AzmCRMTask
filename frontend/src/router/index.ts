@@ -6,6 +6,7 @@ import AppShell from '../layouts/AppShell.vue';
 import UserListView from '../views/users/UserListView.vue';
 import DepartmentListView from '../views/departments/DepartmentListView.vue';
 import TicketCategoryListView from '../views/ticketCategories/TicketCategoryListView.vue';
+import QuickReplyListView from '../views/quickReplies/QuickReplyListView.vue';
 import TicketListView from '../views/tickets/TicketListView.vue';
 import TicketCreateView from '../views/tickets/TicketCreateView.vue';
 import TicketDetailView from '../views/tickets/TicketDetailView.vue';
@@ -29,6 +30,12 @@ const router = createRouter({
           path: 'ticket-categories',
           name: 'ticket-categories',
           component: TicketCategoryListView,
+          meta: { roles: ['ADMIN'] },
+        },
+        {
+          path: 'quick-replies',
+          name: 'quick-replies',
+          component: QuickReplyListView,
           meta: { roles: ['ADMIN'] },
         },
       ],

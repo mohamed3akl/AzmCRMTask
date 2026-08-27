@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "Home", "tickets": "Tickets", "users": "Users", "departments": "Departments", "ticketCategories": "Ticket Categories", "logout": "Logout" },
+  "nav": { "home": "Home", "tickets": "Tickets", "users": "Users", "departments": "Departments", "ticketCategories": "Ticket Categories", "quickReplies": "Quick Replies", "logout": "Logout" },
   "login": { "title": "Sign in", "email": "Email", "password": "Password", "submit": "Sign in", "error": "Invalid email or password" },
   "home": { "welcome": "Welcome, {name}" },
   "dashboard": {
@@ -34,6 +34,14 @@
   },
   "departments": { "title": "Departments", "create": "New department", "nameEn": "Name (English)", "nameAr": "Name (Arabic)" },
   "ticketCategories": { "title": "Ticket Categories", "create": "New category", "nameEn": "Name (English)", "nameAr": "Name (Arabic)" },
+  "quickReplies": {
+    "title": "Quick Replies",
+    "create": "New quick reply",
+    "titleEn": "Title (English)",
+    "titleAr": "Title (Arabic)",
+    "bodyEn": "Body (English)",
+    "bodyAr": "Body (Arabic)"
+  },
   "tickets": {
     "title": "Tickets",
     "create": "New Ticket",

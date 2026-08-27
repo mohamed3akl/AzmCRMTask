@@ -31,6 +31,7 @@ describe('AppShell', () => {
       { path: '/users', name: 'users', component: { template: '<div />' } },
       { path: '/departments', name: 'departments', component: { template: '<div />' } },
       { path: '/ticket-categories', name: 'ticket-categories', component: { template: '<div />' } },
+      { path: '/quick-replies', name: 'quick-replies', component: { template: '<div />' } },
     ]);
 
     await wrapper.find('[data-testid="language-menu-activator"]').trigger('click');
@@ -62,6 +63,7 @@ describe('AppShell', () => {
       { path: '/users', name: 'users', component: { template: '<div />' } },
       { path: '/departments', name: 'departments', component: { template: '<div />' } },
       { path: '/ticket-categories', name: 'ticket-categories', component: { template: '<div />' } },
+      { path: '/quick-replies', name: 'quick-replies', component: { template: '<div />' } },
     ]);
 
     await wrapper.find('[data-testid="user-menu-activator"]').trigger('click');
