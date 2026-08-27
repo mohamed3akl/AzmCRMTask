@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -12,7 +12,7 @@ declare global {
     | {
         getConfig: (el: HTMLScriptElement) => { origin: string; locale: string; containerId: string | null };
         createIframe: (config: { origin: string; locale: string }) => HTMLIFrameElement;
-        mount: (el: HTMLScriptElement) => HTMLIFrameElement;
+        mount: (el: HTMLScriptElement) => HTMLIFrameElement | null;
       }
     | undefined;
 }
@@ -32,7 +32,7 @@ describe('widget-embed.js', () => {
     scriptEl.setAttribute('data-locale', 'ar');
     document.body.appendChild(scriptEl);
 
-    const iframe = window.__azmcrmWidget!.mount(scriptEl);
+    const iframe = window.__azmcrmWidget!.mount(scriptEl)!;
 
     expect(iframe.tagName).toBe('IFRAME');
     expect(iframe.src).toBe('https://azmcrm.example.com/widget/embed?locale=ar');
@@ -43,7 +43,7 @@ describe('widget-embed.js', () => {
     scriptEl.setAttribute('data-origin', 'https://azmcrm.example.com');
     document.body.appendChild(scriptEl);
 
-    const iframe = window.__azmcrmWidget!.mount(scriptEl);
+    const iframe = window.__azmcrmWidget!.mount(scriptEl)!;
 
     window.dispatchEvent(
       new MessageEvent('message', {
@@ -60,7 +60,7 @@ describe('widget-embed.js', () => {
     scriptEl.setAttribute('data-origin', 'https://azmcrm.example.com');
     document.body.appendChild(scriptEl);
 
-    const iframe = window.__azmcrmWidget!.mount(scriptEl);
+    const iframe = window.__azmcrmWidget!.mount(scriptEl)!;
     const initialHeight = iframe.style.height;
 
     window.dispatchEvent(
@@ -71,5 +71,18 @@ describe('widget-embed.js', () => {
     );
 
     expect(iframe.style.height).toBe(initialHeight);
+  });
+
+  it('logs an error and creates no iframe when data-origin is missing', () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const scriptEl = document.createElement('script');
+    document.body.appendChild(scriptEl);
+
+    const result = window.__azmcrmWidget!.mount(scriptEl);
+
+    expect(result).toBeNull();
+    expect(document.querySelector('iframe')).toBeNull();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('data-origin'));
+    consoleErrorSpy.mockRestore();
   });
 });

@@ -46,6 +46,32 @@ describe('WidgetEmbedView', () => {
     expect(postMessageSpy).toHaveBeenCalledWith(expect.objectContaining({ source: 'azmcrm-widget' }), '*');
   });
 
+  it('posts the measured content-root height, not document.documentElement, so the iframe can shrink', async () => {
+    vi.mocked(submitPublicTicket).mockResolvedValue({ reference: 'A1B2C3D4' });
+    const postMessageSpy = vi.spyOn(window.parent, 'postMessage');
+
+    const wrapper = mountWithPlugins(WidgetEmbedView, {}, [
+      { path: '/widget/embed', name: 'widget-embed', component: WidgetEmbedView },
+    ]);
+    await wrapper.vm.$nextTick();
+
+    const rootEl = wrapper.find('[data-testid="widget-root"]').element as HTMLElement;
+    vi.spyOn(rootEl, 'getBoundingClientRect').mockReturnValue({ height: 137 } as DOMRect);
+
+    await wrapper.find('[data-testid="widget-full-name"] input').setValue('Jane Customer');
+    await wrapper.find('[data-testid="widget-email"] input').setValue('jane@example.com');
+    await wrapper.find('[data-testid="widget-subject"] input').setValue('Cannot log in');
+    await wrapper.find('[data-testid="widget-description"] textarea').setValue('Getting an error');
+    await wrapper.find('form').trigger('submit.prevent');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect(postMessageSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({ source: 'azmcrm-widget', height: 137 }),
+      '*'
+    );
+  });
+
   it('shows an error and does not submit when both email and phone are missing', async () => {
     const wrapper = mountWithPlugins(WidgetEmbedView, {}, [
       { path: '/widget/embed', name: 'widget-embed', component: WidgetEmbedView },
@@ -60,6 +86,31 @@ describe('WidgetEmbedView', () => {
 
     expect(wrapper.find('[data-testid="widget-error"]').exists()).toBe(true);
     expect(submitPublicTicket).not.toHaveBeenCalled();
+  });
+
+  it('clears a prior submit error when a later attempt fails client-side validation instead', async () => {
+    vi.mocked(submitPublicTicket).mockRejectedValue(new Error('Network Error'));
+
+    const wrapper = mountWithPlugins(WidgetEmbedView, {}, [
+      { path: '/widget/embed', name: 'widget-embed', component: WidgetEmbedView },
+    ]);
+    await wrapper.vm.$nextTick();
+
+    await wrapper.find('[data-testid="widget-full-name"] input').setValue('Jane Customer');
+    await wrapper.find('[data-testid="widget-email"] input').setValue('jane@example.com');
+    await wrapper.find('[data-testid="widget-subject"] input').setValue('Cannot log in');
+    await wrapper.find('[data-testid="widget-description"] textarea').setValue('Getting an error');
+    await wrapper.find('form').trigger('submit.prevent');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-testid="widget-submit-error"]').exists()).toBe(true);
+
+    await wrapper.find('[data-testid="widget-email"] input').setValue('');
+    await wrapper.find('form').trigger('submit.prevent');
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('[data-testid="widget-error"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="widget-submit-error"]').exists()).toBe(false);
   });
 
   it('shows a submit error and stays on the form when the API call rejects', async () => {

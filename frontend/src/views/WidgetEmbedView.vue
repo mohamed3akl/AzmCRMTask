@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-4">
+  <v-container ref="rootEl" data-testid="widget-root" fluid class="pa-4">
     <template v-if="!submitted">
       <h1 class="text-h6 mb-4">{{ $t('widget.title') }}</h1>
       <form @submit.prevent="submit">
@@ -47,9 +47,14 @@ const submitting = ref(false);
 const reference = ref('');
 const error = ref(false);
 const submitErrorMessage = ref('');
+const rootEl = ref<{ $el: HTMLElement } | null>(null);
 
 function postHeight() {
-  window.parent.postMessage({ source: 'azmcrm-widget', height: document.documentElement.scrollHeight }, '*');
+  // Measure the content root, not document.documentElement — the latter is
+  // floored at the iframe's current height and can only grow, never shrink
+  // (e.g. after the tall form is replaced by the short confirmation view).
+  const height = rootEl.value?.$el.getBoundingClientRect().height ?? document.documentElement.scrollHeight;
+  window.parent.postMessage({ source: 'azmcrm-widget', height: Math.ceil(height) }, '*');
 }
 
 function extractBackendErrorMessage(err: unknown): string | undefined {
@@ -60,12 +65,12 @@ function extractBackendErrorMessage(err: unknown): string | undefined {
 }
 
 async function submit() {
+  submitErrorMessage.value = '';
   if (!form.email.trim() && !form.phone.trim()) {
     error.value = true;
     return;
   }
   error.value = false;
-  submitErrorMessage.value = '';
   submitting.value = true;
   try {
     const result = await submitPublicTicket({

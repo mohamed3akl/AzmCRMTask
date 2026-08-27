@@ -158,5 +158,33 @@ npx prisma migrate deploy
 
 ---
 
+## 🧩 Embeddable Ticket Widget
+
+AzmCRM ships a small, embeddable widget that lets anyone submit a support ticket from an external website — no AzmCRM account required. Add this to any page:
+
+```html
+<script
+  src="https://your-azmcrm-domain.com/widget-embed.js"
+  data-origin="https://your-azmcrm-domain.com"
+  data-locale="en"
+></script>
+```
+
+**Attributes:**
+
+| Attribute | Required | Description |
+|---|---|---|
+| `data-origin` | Yes | The full origin (scheme + host, no trailing slash) where AzmCRM is hosted. The script logs a console error and does nothing if this is omitted. |
+| `data-locale` | No | `en` (default) or `ar`. Controls the widget's language and text direction. |
+| `data-container` | No | The `id` of an element to mount the iframe into. If omitted, the iframe is inserted immediately after the `<script>` tag. |
+
+The widget POSTs to the unauthenticated, rate-limited (5 submissions per 15 minutes per IP) `/api/public/tickets` endpoint and shows the submitter a short reference code on success.
+
+### Deployment note: framing policy
+
+Because this app is now expected to be embedded in an iframe on third-party sites, your reverse proxy or hosting configuration must **not** apply a blanket `X-Frame-Options: DENY` or `frame-ancestors 'none'` — that would block the widget everywhere it's embedded. Apply a permissive framing policy only on the `/widget/embed` route and keep the rest of the app restrictive. If you run behind a reverse proxy, also set Express's `app.set('trust proxy', ...)` so the public endpoint's rate limiting attributes requests to the real client IP rather than the proxy's.
+
+---
+
 ## 🔑 Seeded Accounts
 Please refer to the [`users.md`](file:///c:/Users/moham/Desktop/AzmCRM/users.md) file at the root of the workspace for pre-configured Super Admin and Agent credentials.
