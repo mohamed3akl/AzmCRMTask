@@ -6,6 +6,7 @@ import { usersRouter } from './routes/users.routes';
 import { departmentsRouter } from './routes/departments.routes';
 import { customersRouter } from './routes/customers.routes';
 import { ticketCategoriesRouter } from './routes/ticketCategories.routes';
+import { ticketsRouter } from './routes/tickets.routes';
 
 export function createApp(): Express {
   const app = express();
@@ -21,6 +22,7 @@ export function createApp(): Express {
   app.use('/api/departments', departmentsRouter);
   app.use('/api/customers', customersRouter);
   app.use('/api/ticket-categories', ticketCategoriesRouter);
+  app.use('/api/tickets', ticketsRouter);
 
   app.use(errorHandler);
   return app;
