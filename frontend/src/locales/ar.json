@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "الرئيسية", "users": "المستخدمون", "departments": "الأقسام", "ticketCategories": "فئات التذاكر", "logout": "تسجيل الخروج" },
+  "nav": { "home": "الرئيسية", "tickets": "التذاكر", "users": "المستخدمون", "departments": "الأقسام", "ticketCategories": "فئات التذاكر", "logout": "تسجيل الخروج" },
   "login": { "title": "تسجيل الدخول", "email": "البريد الإلكتروني", "password": "كلمة المرور", "submit": "تسجيل الدخول", "error": "بريد إلكتروني أو كلمة مرور غير صحيحة" },
   "home": { "welcome": "مرحبًا، {name}" },
   "users": {
@@ -13,5 +13,32 @@
     "deactivate": "إيقاف"
   },
   "departments": { "title": "الأقسام", "create": "قسم جديد", "nameEn": "الاسم (إنجليزي)", "nameAr": "الاسم (عربي)" },
-  "ticketCategories": { "title": "فئات التذاكر", "create": "فئة جديدة", "nameEn": "الاسم (إنجليزي)", "nameAr": "الاسم (عربي)" }
+  "ticketCategories": { "title": "فئات التذاكر", "create": "فئة جديدة", "nameEn": "الاسم (إنجليزي)", "nameAr": "الاسم (عربي)" },
+  "tickets": {
+    "title": "التذاكر",
+    "create": "تذكرة جديدة",
+    "filterStatus": "الحالة",
+    "escalated": "تم التصعيد",
+    "subject": "الموضوع",
+    "description": "الوصف",
+    "customer": "العميل",
+    "status": "الحالة",
+    "priority": "الأولوية",
+    "assignee": "المسؤول",
+    "category": "الفئة",
+    "department": "القسم",
+    "createdBy": "أنشأها",
+    "timeline": "السجل",
+    "addNote": "إضافة ملاحظة",
+    "escalate": "تصعيد",
+    "unescalate": "إلغاء التصعيد",
+    "escalateNote": "ملاحظة (اختياري)",
+    "claim": "استلام",
+    "release": "تحرير",
+    "newCustomer": "عميل جديد",
+    "pickExistingCustomer": "اختيار عميل موجود",
+    "customerFullName": "الاسم الكامل",
+    "customerEmail": "البريد الإلكتروني",
+    "customerPhone": "الهاتف"
+  }
 }

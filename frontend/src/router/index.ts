@@ -6,6 +6,7 @@ import AppShell from '../layouts/AppShell.vue';
 import UserListView from '../views/users/UserListView.vue';
 import DepartmentListView from '../views/departments/DepartmentListView.vue';
 import TicketCategoryListView from '../views/ticketCategories/TicketCategoryListView.vue';
+import TicketListView from '../views/tickets/TicketListView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -17,6 +18,7 @@ const router = createRouter({
       meta: { requiresAuth: true },
       children: [
         { path: '', name: 'home', component: HomeView },
+        { path: 'tickets', name: 'tickets', component: TicketListView },
         { path: 'users', name: 'users', component: UserListView, meta: { roles: ['ADMIN'] } },
         { path: 'departments', name: 'departments', component: DepartmentListView, meta: { roles: ['ADMIN'] } },
         {

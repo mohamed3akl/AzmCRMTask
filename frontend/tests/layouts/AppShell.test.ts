@@ -27,6 +27,7 @@ describe('AppShell', () => {
     const wrapper = mountWithPlugins(AppShell, {}, [
       { path: '/', name: 'home', component: { template: '<div />' } },
       { path: '/login', name: 'login', component: { template: '<div />' } },
+      { path: '/tickets', name: 'tickets', component: { template: '<div />' } },
       { path: '/users', name: 'users', component: { template: '<div />' } },
       { path: '/departments', name: 'departments', component: { template: '<div />' } },
       { path: '/ticket-categories', name: 'ticket-categories', component: { template: '<div />' } },
@@ -56,6 +57,7 @@ describe('AppShell', () => {
     const wrapper = mountWithPlugins(AppShell, {}, [
       { path: '/', name: 'home', component: { template: '<div />' } },
       { path: '/login', name: 'login', component: { template: '<div />' } },
+      { path: '/tickets', name: 'tickets', component: { template: '<div />' } },
       { path: '/users', name: 'users', component: { template: '<div />' } },
       { path: '/departments', name: 'departments', component: { template: '<div />' } },
       { path: '/ticket-categories', name: 'ticket-categories', component: { template: '<div />' } },
