@@ -67,6 +67,7 @@
     "pickExistingCustomer": "اختيار عميل موجود",
     "customerFullName": "الاسم الكامل",
     "customerEmail": "البريد الإلكتروني",
-    "customerPhone": "الهاتف"
+    "customerPhone": "الهاتف",
+    "insertQuickReply": "إدراج رد سريع"
   }
 }

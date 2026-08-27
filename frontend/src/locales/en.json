@@ -67,6 +67,7 @@
     "pickExistingCustomer": "Pick existing customer",
     "customerFullName": "Full name",
     "customerEmail": "Email",
-    "customerPhone": "Phone"
+    "customerPhone": "Phone",
+    "insertQuickReply": "Insert quick reply"
   }
 }

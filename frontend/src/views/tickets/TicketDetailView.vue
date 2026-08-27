@@ -9,6 +9,16 @@
       <v-col cols="12" md="8">
         <p class="mb-4">{{ ticket.description }}</p>
 
+        <v-select
+          data-testid="quick-reply-select"
+          :items="quickReplyOptions"
+          item-title="title"
+          item-value="id"
+          :item-props="(item: { id: string }) => ({ 'data-testid': `quick-reply-option-${item.id}` })"
+          :label="$t('tickets.insertQuickReply')"
+          clearable
+          @update:model-value="insertQuickReply"
+        />
         <v-text-field
           v-model="noteText"
           data-testid="note-input"
@@ -117,6 +127,7 @@ import {
 import { fetchTicketCategories, type ApiTicketCategory } from '../../api/ticketCategories';
 import { fetchDepartments, type ApiDepartment } from '../../api/departments';
 import { fetchUsers, type ApiUser } from '../../api/users';
+import { fetchQuickReplies, type ApiQuickReply } from '../../api/quickReplies';
 import { useAuthStore } from '../../stores/auth';
 
 const route = useRoute();
@@ -125,6 +136,7 @@ const ticket = ref<ApiTicketDetail | null>(null);
 const categories = ref<ApiTicketCategory[]>([]);
 const departments = ref<ApiDepartment[]>([]);
 const agents = ref<ApiUser[]>([]);
+const quickReplies = ref<ApiQuickReply[]>([]);
 const noteText = ref('');
 const escalateDialogOpen = ref(false);
 const escalateNote = ref('');
@@ -136,6 +148,9 @@ const canReassignFreely = computed(
   () => auth.currentUser?.role === 'ADMIN' || auth.currentUser?.role === 'SUPERVISOR'
 );
 const isAssignedToMe = computed(() => ticket.value?.assignee?.id === auth.currentUser?.id);
+const quickReplyOptions = computed(() =>
+  quickReplies.value.map((r) => ({ id: r.id, title: r.titleEn }))
+);
 
 const eventDescriptions: Record<string, (event: ApiTicketEvent) => string> = {
   STATUS_CHANGED: (e) => `Status changed from ${e.oldValue} to ${e.newValue}`,
@@ -200,6 +215,14 @@ async function submitNote() {
   noteText.value = '';
 }
 
+function insertQuickReply(id: string | null) {
+  if (!id) return;
+  const reply = quickReplies.value.find((r) => r.id === id);
+  if (!reply) return;
+  const body = auth.currentUser?.locale === 'ar' ? reply.bodyAr : reply.bodyEn;
+  noteText.value = noteText.value ? `${noteText.value} ${body}` : body;
+}
+
 onMounted(async () => {
   await load();
   try {
@@ -218,6 +241,11 @@ onMounted(async () => {
     } catch {
       // Non-fatal: assignee list may be empty if unavailable.
     }
+  }
+  try {
+    quickReplies.value = await fetchQuickReplies();
+  } catch {
+    // Non-fatal: quick reply list may be empty if unavailable.
   }
 });
 </script>

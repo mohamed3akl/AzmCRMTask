@@ -20,11 +20,15 @@ vi.mock('../../../src/api/departments', () => ({
 vi.mock('../../../src/api/users', () => ({
   fetchUsers: vi.fn(),
 }));
+vi.mock('../../../src/api/quickReplies', () => ({
+  fetchQuickReplies: vi.fn(),
+}));
 
 import { fetchTicket, addTicketNote } from '../../../src/api/tickets';
 import { fetchTicketCategories } from '../../../src/api/ticketCategories';
 import { fetchDepartments } from '../../../src/api/departments';
 import { fetchUsers } from '../../../src/api/users';
+import { fetchQuickReplies } from '../../../src/api/quickReplies';
 import TicketDetailView from '../../../src/views/tickets/TicketDetailView.vue';
 
 const baseTicket = {
@@ -60,6 +64,7 @@ describe('TicketDetailView', () => {
     vi.mocked(fetchTicketCategories).mockResolvedValue([]);
     vi.mocked(fetchDepartments).mockResolvedValue([]);
     vi.mocked(fetchUsers).mockResolvedValue([]);
+    vi.mocked(fetchQuickReplies).mockResolvedValue([]);
   });
 
   it('renders the ticket and its event timeline', async () => {
@@ -118,5 +123,40 @@ describe('TicketDetailView', () => {
 
     expect(addTicketNote).toHaveBeenCalledWith('ticket-1', 'Follow-up call scheduled');
     expect(wrapper.text()).toContain('Follow-up call scheduled');
+  });
+
+  it('inserts a quick reply into the note field', async () => {
+    vi.mocked(fetchQuickReplies).mockResolvedValue([
+      { id: 'qr1', titleEn: 'Greeting', titleAr: 'ترحيب', bodyEn: 'Hello, thanks for reaching out!', bodyAr: 'مرحبًا!' },
+    ]);
+
+    const auth = useAuthStore();
+    auth.currentUser = {
+      id: 'u1',
+      email: 'agent@example.com',
+      fullName: 'Agent Smith',
+      role: 'AGENT',
+      departmentId: null,
+      isActive: true,
+      locale: 'en',
+    };
+
+    const wrapper = mountWithPlugins(
+      TicketDetailView,
+      { global: { mocks: { $route: { params: { id: 'ticket-1' } } } } },
+      [{ path: '/', component: { template: '<div />' } }]
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    await wrapper.find('[data-testid="quick-reply-select"] input').trigger('mousedown');
+    await wrapper.vm.$nextTick();
+    const option = wrapper.find('[data-testid="quick-reply-option-qr1"]');
+    expect(option.exists()).toBe(true);
+    await option.trigger('click');
+    await wrapper.vm.$nextTick();
+
+    const noteInput = wrapper.find('[data-testid="note-input"] input').element as HTMLInputElement;
+    expect(noteInput.value).toBe('Hello, thanks for reaching out!');
   });
 });
