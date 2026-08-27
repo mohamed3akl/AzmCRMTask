@@ -10,5 +10,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
-  "include": ["src", "prisma", "tests"]
+  "include": ["src", "prisma", "tests"],
+  "files": ["src/types/express.d.ts"]
 }

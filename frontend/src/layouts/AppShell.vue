@@ -3,12 +3,8 @@
     <v-navigation-drawer permanent>
       <v-list>
         <v-list-item :title="$t('nav.home')" :to="{ name: 'home' }" />
-        <v-list-item v-if="isAdmin && router.hasRoute('users')" :title="$t('nav.users')" :to="{ name: 'users' }" />
-        <v-list-item
-          v-if="isAdmin && router.hasRoute('departments')"
-          :title="$t('nav.departments')"
-          :to="{ name: 'departments' }"
-        />
+        <v-list-item v-if="isAdmin" :title="$t('nav.users')" :to="{ name: 'users' }" />
+        <v-list-item v-if="isAdmin" :title="$t('nav.departments')" :to="{ name: 'departments' }" />
       </v-list>
     </v-navigation-drawer>
 
@@ -36,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useLocale } from 'vuetify';
 import { useRouter } from 'vue-router';
@@ -58,6 +54,10 @@ function setLocale(value: 'en' | 'ar') {
   document.documentElement.dir = value === 'ar' ? 'rtl' : 'ltr';
   document.documentElement.lang = value;
 }
+
+onMounted(() => {
+  setLocale(auth.currentUser?.locale === 'ar' ? 'ar' : 'en');
+});
 
 function handleLogout() {
   auth.logout();

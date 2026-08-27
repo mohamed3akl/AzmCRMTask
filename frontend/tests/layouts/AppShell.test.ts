@@ -27,6 +27,8 @@ describe('AppShell', () => {
     const wrapper = mountWithPlugins(AppShell, {}, [
       { path: '/', name: 'home', component: { template: '<div />' } },
       { path: '/login', name: 'login', component: { template: '<div />' } },
+      { path: '/users', name: 'users', component: { template: '<div />' } },
+      { path: '/departments', name: 'departments', component: { template: '<div />' } },
     ]);
 
     const arButton = wrapper.findAll('button').find((btn) => btn.text() === 'AR');
@@ -53,6 +55,8 @@ describe('AppShell', () => {
     const wrapper = mountWithPlugins(AppShell, {}, [
       { path: '/', name: 'home', component: { template: '<div />' } },
       { path: '/login', name: 'login', component: { template: '<div />' } },
+      { path: '/users', name: 'users', component: { template: '<div />' } },
+      { path: '/departments', name: 'departments', component: { template: '<div />' } },
     ]);
 
     await wrapper.find('[data-testid="user-menu-activator"]').trigger('click');
