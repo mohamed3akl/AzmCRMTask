@@ -13,25 +13,115 @@ enum Role {
   ADMIN
 }
 
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketEventType {
+  STATUS_CHANGED
+  PRIORITY_CHANGED
+  CATEGORY_CHANGED
+  DEPARTMENT_CHANGED
+  ASSIGNEE_CHANGED
+  ESCALATED
+  UNESCALATED
+  NOTE_ADDED
+}
+
 model Department {
   id        String   @id @default(uuid())
   nameEn    String
   nameAr    String
   users     User[]
+  tickets   Ticket[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model User {
-  id           String      @id @default(uuid())
-  email        String      @unique
-  passwordHash String
-  fullName     String
-  role         Role
-  department   Department? @relation(fields: [departmentId], references: [id])
+  id              String        @id @default(uuid())
+  email           String        @unique
+  passwordHash    String
+  fullName        String
+  role            Role
+  department      Department?   @relation(fields: [departmentId], references: [id])
+  departmentId    String?
+  isActive        Boolean       @default(true)
+  locale          String        @default("en")
+  assignedTickets Ticket[]      @relation("TicketAssignee")
+  createdTickets  Ticket[]      @relation("TicketCreatedBy")
+  ticketEvents    TicketEvent[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  fullName  String
+  email     String?
+  phone     String?
+  tickets   Ticket[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TicketCategory {
+  id        String   @id @default(uuid())
+  nameEn    String
+  nameAr    String
+  tickets   Ticket[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ticket {
+  id           String         @id @default(uuid())
+  subject      String
+  description  String
+  status       TicketStatus   @default(OPEN)
+  priority     TicketPriority @default(MEDIUM)
+  isEscalated  Boolean        @default(false)
+
+  customer     Customer       @relation(fields: [customerId], references: [id])
+  customerId   String
+
+  category     TicketCategory? @relation(fields: [categoryId], references: [id])
+  categoryId   String?
+
+  department   Department?    @relation(fields: [departmentId], references: [id])
   departmentId String?
-  isActive     Boolean     @default(true)
-  locale       String      @default("en")
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+
+  assignee     User?          @relation("TicketAssignee", fields: [assigneeId], references: [id])
+  assigneeId   String?
+
+  createdBy    User           @relation("TicketCreatedBy", fields: [createdById], references: [id])
+  createdById  String
+
+  events       TicketEvent[]
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model TicketEvent {
+  id        String          @id @default(uuid())
+  ticket    Ticket          @relation(fields: [ticketId], references: [id])
+  ticketId  String
+  type      TicketEventType
+  oldValue  String?
+  newValue  String?
+  note      String?
+  author    User            @relation(fields: [authorId], references: [id])
+  authorId  String
+  createdAt DateTime        @default(now())
 }
