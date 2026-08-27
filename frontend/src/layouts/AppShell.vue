@@ -1,6 +1,10 @@
 <template>
   <v-app>
     <v-navigation-drawer permanent>
+      <div class="d-flex align-center px-4 py-4" style="border-bottom: 1px solid rgba(0, 0, 0, 0.12)">
+        <v-icon color="primary" class="me-2" size="28">mdi-headset</v-icon>
+        <span class="text-h6 font-weight-black text-primary" style="letter-spacing: 0.5px;">AzmCRM</span>
+      </div>
       <v-list>
         <v-list-item :title="$t('nav.home')" :to="{ name: 'home' }" />
         <v-list-item :title="$t('nav.tickets')" :to="{ name: 'tickets' }" />
@@ -11,7 +15,6 @@
     </v-navigation-drawer>
 
     <v-app-bar>
-      <v-app-bar-title>AzmCRM</v-app-bar-title>
       <v-spacer />
       <v-btn-toggle :model-value="currentLocale" mandatory density="compact" class="mr-4">
         <v-btn value="en" @click="setLocale('en')">EN</v-btn>
