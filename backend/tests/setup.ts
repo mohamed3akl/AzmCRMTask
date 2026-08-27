@@ -7,6 +7,7 @@ import { prisma } from '../src/lib/prisma';
 
 beforeEach(async () => {
   await prisma.ticketEvent.deleteMany();
+  await prisma.task.deleteMany();
   await prisma.ticket.deleteMany();
   await prisma.customer.deleteMany();
   await prisma.ticketCategory.deleteMany();
