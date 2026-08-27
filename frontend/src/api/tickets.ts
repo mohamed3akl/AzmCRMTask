@@ -100,3 +100,19 @@ export async function addTicketNote(id: string, note: string): Promise<ApiTicket
   const res = await apiClient.post(`/tickets/${id}/notes`, { note });
   return res.data;
 }
+
+export interface ApiRecentTicketEvent {
+  id: string;
+  type: TicketEventType;
+  oldValue: string | null;
+  newValue: string | null;
+  note: string | null;
+  createdAt: string;
+  author: { id: string; fullName: string };
+  ticket: { id: string; subject: string };
+}
+
+export async function fetchRecentTicketEvents(limit = 20): Promise<ApiRecentTicketEvent[]> {
+  const res = await apiClient.get('/ticket-events/recent', { params: { limit } });
+  return res.data;
+}

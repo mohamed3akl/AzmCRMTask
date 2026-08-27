@@ -9,10 +9,16 @@
         <MyTasksWidget />
       </v-col>
     </v-row>
+    <v-row>
+      <v-col cols="12">
+        <TeamActivityWidget />
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script setup lang="ts">
 import MyTicketsWidget from '../components/dashboard/MyTicketsWidget.vue';
 import MyTasksWidget from '../components/dashboard/MyTasksWidget.vue';
+import TeamActivityWidget from '../components/dashboard/TeamActivityWidget.vue';
 </script>

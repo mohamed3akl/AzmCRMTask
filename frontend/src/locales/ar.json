@@ -7,7 +7,9 @@
     "myTickets": "تذاكري",
     "noTickets": "لا توجد تذاكر مسندة إليك.",
     "myTasks": "مهامي",
-    "noTasks": "لا توجد مهام مفتوحة."
+    "noTasks": "لا توجد مهام مفتوحة.",
+    "teamActivity": "نشاط الفريق",
+    "noActivity": "لا يوجد نشاط حديث."
   },
   "tasks": {
     "newTask": "مهمة جديدة",

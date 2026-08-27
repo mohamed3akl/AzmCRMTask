@@ -7,7 +7,9 @@
     "myTickets": "My Tickets",
     "noTickets": "No tickets assigned to you.",
     "myTasks": "My Tasks",
-    "noTasks": "No open tasks."
+    "noTasks": "No open tasks.",
+    "teamActivity": "Team Activity",
+    "noActivity": "No recent activity."
   },
   "tasks": {
     "newTask": "New task",

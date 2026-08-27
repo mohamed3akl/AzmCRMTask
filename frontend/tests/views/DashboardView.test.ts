@@ -4,6 +4,7 @@ import { mountWithPlugins } from '../testUtils';
 
 vi.mock('../../src/api/tickets', () => ({
   fetchTickets: vi.fn(),
+  fetchRecentTicketEvents: vi.fn(),
 }));
 
 vi.mock('../../src/api/tasks', () => ({
@@ -12,7 +13,7 @@ vi.mock('../../src/api/tasks', () => ({
   updateTask: vi.fn(),
 }));
 
-import { fetchTickets } from '../../src/api/tickets';
+import { fetchTickets, fetchRecentTicketEvents } from '../../src/api/tickets';
 import { fetchTasks, createTask, updateTask } from '../../src/api/tasks';
 import { useAuthStore } from '../../src/stores/auth';
 import DashboardView from '../../src/views/DashboardView.vue';
@@ -41,6 +42,7 @@ describe('DashboardView', () => {
     setActivePinia(createPinia());
     vi.mocked(fetchTickets).mockResolvedValue([]);
     vi.mocked(fetchTasks).mockResolvedValue([]);
+    vi.mocked(fetchRecentTicketEvents).mockResolvedValue([]);
   });
 
   it("renders the agent's assigned open tickets", async () => {
@@ -103,5 +105,28 @@ describe('DashboardView', () => {
     await wrapper.find('[data-testid="task-done-task1"]').trigger('click');
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(updateTask).toHaveBeenCalledWith('task1', { isDone: true });
+  });
+
+  it('renders recent team activity', async () => {
+    loginAs('AGENT');
+    vi.mocked(fetchRecentTicketEvents).mockResolvedValue([
+      {
+        id: 'ev1',
+        type: 'ESCALATED',
+        oldValue: null,
+        newValue: null,
+        note: null,
+        createdAt: new Date().toISOString(),
+        author: { id: 'sup1', fullName: 'Sam Supervisor' },
+        ticket: { id: 't9', subject: 'Payment failed' },
+      },
+    ]);
+
+    const wrapper = mountWithPlugins(DashboardView, {}, dashboardRoutes);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain('Payment failed');
+    expect(wrapper.text()).toContain('Sam Supervisor');
   });
 });
