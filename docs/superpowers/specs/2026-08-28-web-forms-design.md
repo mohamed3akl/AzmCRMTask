@@ -286,7 +286,8 @@ one new backend dependency (`express-rate-limit`).
     `source: 'azmcrm-widget'` payload after mount and again after
     submission; a validation-failure case (no email or phone provided)
     shows an inline error and does not call the API.
-  - `TicketListView`/`TicketDetailView` — a small addition to each
-    existing test file confirming a ticket with `createdBy: null` renders
-    without throwing (`—` fallback instead of a crash on
-    `ticket.createdBy.fullName`).
+  - `TicketDetailView` — the only existing view that renders
+    `createdBy.fullName` (`TicketListView`'s columns never reference it,
+    so it needs no change) — a small addition to its existing test file
+    confirming a ticket with `createdBy: null` renders without throwing
+    (`—` fallback instead of a crash on `ticket.createdBy.fullName`).
