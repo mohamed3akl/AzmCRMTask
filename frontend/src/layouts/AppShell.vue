@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-navigation-drawer permanent>
+    <v-navigation-drawer permanent style="background-color:rgb(244, 244, 244) !important">
       <div class="d-flex align-center px-4 py-5" style="border-bottom: 1px solid rgba(0, 0, 0, 0.12)">
         <span class="text-h6 font-weight-black text-primary" style="letter-spacing: 0.5px;">AzmCRM</span>
       </div>
