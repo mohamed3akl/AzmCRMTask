@@ -9,7 +9,13 @@
     "myTasks": "My Tasks",
     "noTasks": "No open tasks.",
     "teamActivity": "Team Activity",
-    "noActivity": "No recent activity."
+    "noActivity": "No recent activity.",
+    "unassignedQueue": "Unassigned Queue",
+    "noUnassigned": "No unassigned tickets.",
+    "escalatedTickets": "Escalated Tickets",
+    "noEscalated": "No escalated tickets.",
+    "teamWorkload": "Team Workload",
+    "noWorkload": "No open tickets."
   },
   "tasks": {
     "newTask": "New task",

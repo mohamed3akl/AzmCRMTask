@@ -129,4 +129,79 @@ describe('DashboardView', () => {
     expect(wrapper.text()).toContain('Payment failed');
     expect(wrapper.text()).toContain('Sam Supervisor');
   });
+
+  it('renders team-wide widgets for a supervisor', async () => {
+    loginAs('SUPERVISOR');
+    vi.mocked(fetchTickets).mockImplementation(async (filters = {}) => {
+      if (filters.unassigned) {
+        return [
+          {
+            id: 'u1',
+            subject: 'Unassigned ticket',
+            status: 'OPEN',
+            priority: 'MEDIUM',
+            isEscalated: false,
+            customer: { id: 'c2', fullName: 'Bob Customer' },
+            category: null,
+            department: null,
+            assignee: null,
+            createdAt: new Date().toISOString(),
+          },
+        ];
+      }
+      if (filters.escalated) {
+        return [
+          {
+            id: 'e1',
+            subject: 'Escalated ticket',
+            status: 'OPEN',
+            priority: 'URGENT',
+            isEscalated: true,
+            customer: { id: 'c3', fullName: 'Sam Customer' },
+            category: null,
+            department: null,
+            assignee: { id: 'agent1', fullName: 'Agent One', role: 'AGENT' },
+            createdAt: new Date().toISOString(),
+          },
+        ];
+      }
+      if (filters.status === 'OPEN' || filters.status === 'IN_PROGRESS') {
+        return [
+          {
+            id: `w-${filters.status}`,
+            subject: 'Workload ticket',
+            status: filters.status,
+            priority: 'MEDIUM',
+            isEscalated: false,
+            customer: { id: 'c4', fullName: 'Workload Customer' },
+            category: null,
+            department: null,
+            assignee: { id: 'agent1', fullName: 'Agent One', role: 'AGENT' },
+            createdAt: new Date().toISOString(),
+          },
+        ];
+      }
+      return [];
+    });
+
+    const wrapper = mountWithPlugins(DashboardView, {}, dashboardRoutes);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain('Unassigned ticket');
+    expect(wrapper.text()).toContain('Escalated ticket');
+    expect(wrapper.find('[data-testid="team-workload-widget"]').text()).toContain('Agent One');
+    expect(wrapper.find('[data-testid="team-workload-widget"]').text()).toContain('2');
+  });
+
+  it('does not render team-wide widgets for an agent', async () => {
+    loginAs('AGENT');
+    const wrapper = mountWithPlugins(DashboardView, {}, dashboardRoutes);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('[data-testid="unassigned-queue-widget"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="escalated-tickets-widget"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="team-workload-widget"]').exists()).toBe(false);
+  });
 });

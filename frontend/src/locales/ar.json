@@ -9,7 +9,13 @@
     "myTasks": "مهامي",
     "noTasks": "لا توجد مهام مفتوحة.",
     "teamActivity": "نشاط الفريق",
-    "noActivity": "لا يوجد نشاط حديث."
+    "noActivity": "لا يوجد نشاط حديث.",
+    "unassignedQueue": "قائمة الانتظار غير المسندة",
+    "noUnassigned": "لا توجد تذاكر غير مسندة.",
+    "escalatedTickets": "التذاكر المصعدة",
+    "noEscalated": "لا توجد تذاكر مصعدة.",
+    "teamWorkload": "أعباء عمل الفريق",
+    "noWorkload": "لا توجد تذاكر مفتوحة."
   },
   "tasks": {
     "newTask": "مهمة جديدة",
