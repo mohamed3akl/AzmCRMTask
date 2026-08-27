@@ -171,3 +171,52 @@ export async function assignTicket(
 
   return getTicketById(id);
 }
+
+export async function escalateTicket(id: string, note: string | undefined, authorId: string): Promise<TicketDetail> {
+  const current = await prisma.ticket.findUnique({ where: { id } });
+  if (!current) {
+    throw new HttpError(404, 'NOT_FOUND', 'Ticket not found');
+  }
+  if (current.isEscalated) {
+    throw new HttpError(400, 'ALREADY_ESCALATED', 'Ticket is already escalated');
+  }
+
+  await prisma.$transaction([
+    prisma.ticket.update({ where: { id }, data: { isEscalated: true } }),
+    prisma.ticketEvent.create({
+      data: { ticketId: id, type: 'ESCALATED', note: note ?? null, authorId },
+    }),
+  ]);
+
+  return getTicketById(id);
+}
+
+export async function unescalateTicket(id: string, authorId: string): Promise<TicketDetail> {
+  const current = await prisma.ticket.findUnique({ where: { id } });
+  if (!current) {
+    throw new HttpError(404, 'NOT_FOUND', 'Ticket not found');
+  }
+  if (!current.isEscalated) {
+    throw new HttpError(400, 'NOT_ESCALATED', 'Ticket is not escalated');
+  }
+
+  await prisma.$transaction([
+    prisma.ticket.update({ where: { id }, data: { isEscalated: false } }),
+    prisma.ticketEvent.create({
+      data: { ticketId: id, type: 'UNESCALATED', authorId },
+    }),
+  ]);
+
+  return getTicketById(id);
+}
+
+export async function addTicketNote(id: string, note: string, authorId: string): Promise<TicketDetail> {
+  const current = await prisma.ticket.findUnique({ where: { id } });
+  if (!current) {
+    throw new HttpError(404, 'NOT_FOUND', 'Ticket not found');
+  }
+  await prisma.ticketEvent.create({
+    data: { ticketId: id, type: 'NOTE_ADDED', note, authorId },
+  });
+  return getTicketById(id);
+}

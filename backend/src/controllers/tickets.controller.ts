@@ -54,3 +54,27 @@ export async function assignTicketHandler(req: Request, res: Response, next: Nex
     next(err);
   }
 }
+
+export async function escalateTicketHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json(await ticketsService.escalateTicket(req.params.id as string, req.body.note, req.user!.id));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function unescalateTicketHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json(await ticketsService.unescalateTicket(req.params.id as string, req.user!.id));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function addTicketNoteHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json(await ticketsService.addTicketNote(req.params.id as string, req.body.note, req.user!.id));
+  } catch (err) {
+    next(err);
+  }
+}

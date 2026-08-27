@@ -304,3 +304,116 @@ describe('POST /api/tickets/:id/assign', () => {
     expect(res.status).toBe(403);
   });
 });
+
+describe('POST /api/tickets/:id/escalate and /unescalate', () => {
+  it('escalates a ticket with a note', async () => {
+    const { user, token } = await createStaff('AGENT', 'escalator@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: { subject: 'Ticket', description: 'Desc', customerId: customer.id, createdById: user.id },
+    });
+
+    const res = await request(app)
+      .post(`/api/tickets/${ticket.id}/escalate`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ note: 'Customer is very upset' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.isEscalated).toBe(true);
+    expect(res.body.events).toHaveLength(1);
+    expect(res.body.events[0].type).toBe('ESCALATED');
+    expect(res.body.events[0].note).toBe('Customer is very upset');
+  });
+
+  it('rejects escalating an already-escalated ticket', async () => {
+    const { user, token } = await createStaff('AGENT', 'escalator2@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: {
+        subject: 'Ticket',
+        description: 'Desc',
+        customerId: customer.id,
+        createdById: user.id,
+        isEscalated: true,
+      },
+    });
+
+    const res = await request(app)
+      .post(`/api/tickets/${ticket.id}/escalate`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({});
+
+    expect(res.status).toBe(400);
+  });
+
+  it('unescalates a ticket', async () => {
+    const { user, token } = await createStaff('AGENT', 'unescalator@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: {
+        subject: 'Ticket',
+        description: 'Desc',
+        customerId: customer.id,
+        createdById: user.id,
+        isEscalated: true,
+      },
+    });
+
+    const res = await request(app)
+      .post(`/api/tickets/${ticket.id}/unescalate`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.isEscalated).toBe(false);
+  });
+
+  it('rejects unescalating a non-escalated ticket', async () => {
+    const { user, token } = await createStaff('AGENT', 'unescalator2@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: { subject: 'Ticket', description: 'Desc', customerId: customer.id, createdById: user.id },
+    });
+
+    const res = await request(app)
+      .post(`/api/tickets/${ticket.id}/unescalate`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(400);
+  });
+});
+
+describe('POST /api/tickets/:id/notes', () => {
+  it('adds a note to a ticket', async () => {
+    const { user, token } = await createStaff('AGENT', 'note-author@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: { subject: 'Ticket', description: 'Desc', customerId: customer.id, createdById: user.id },
+    });
+
+    const res = await request(app)
+      .post(`/api/tickets/${ticket.id}/notes`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ note: 'Called the customer back' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.events).toHaveLength(1);
+    expect(res.body.events[0].type).toBe('NOTE_ADDED');
+    expect(res.body.events[0].note).toBe('Called the customer back');
+    expect(res.body.events[0].author.fullName).toBe('AGENT User');
+  });
+
+  it('rejects an empty note', async () => {
+    const { user, token } = await createStaff('AGENT', 'note-author2@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: { subject: 'Ticket', description: 'Desc', customerId: customer.id, createdById: user.id },
+    });
+
+    const res = await request(app)
+      .post(`/api/tickets/${ticket.id}/notes`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ note: '' });
+
+    expect(res.status).toBe(400);
+  });
+});
