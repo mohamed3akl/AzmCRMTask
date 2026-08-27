@@ -1,7 +1,6 @@
 {
   "nav": { "home": "الرئيسية", "tickets": "التذاكر", "users": "المستخدمون", "departments": "الأقسام", "ticketCategories": "فئات التذاكر", "quickReplies": "الردود السريعة", "logout": "تسجيل الخروج" },
   "login": { "title": "تسجيل الدخول", "email": "البريد الإلكتروني", "password": "كلمة المرور", "submit": "تسجيل الدخول", "error": "بريد إلكتروني أو كلمة مرور غير صحيحة" },
-  "home": { "welcome": "مرحبًا، {name}" },
   "dashboard": {
     "title": "لوحة التحكم",
     "myTickets": "تذاكري",
@@ -15,12 +14,26 @@
     "escalatedTickets": "التذاكر المصعدة",
     "noEscalated": "لا توجد تذاكر مصعدة.",
     "teamWorkload": "أعباء عمل الفريق",
-    "noWorkload": "لا توجد تذاكر مفتوحة."
+    "noWorkload": "لا توجد تذاكر مفتوحة.",
+    "loadError": "حدث خطأ أثناء تحميل هذه البيانات.",
+    "unassignedLabel": "غير مسند"
   },
   "tasks": {
     "newTask": "مهمة جديدة",
     "add": "إضافة",
-    "markDone": "إنجاز"
+    "markDone": "إنجاز",
+    "dueDate": "تاريخ الاستحقاق",
+    "linkTicket": "ربط بتذكرة (اختياري)"
+  },
+  "ticketEvents": {
+    "statusChanged": "تم تغيير الحالة من {old} إلى {new}",
+    "priorityChanged": "تم تغيير الأولوية من {old} إلى {new}",
+    "categoryChanged": "تم تغيير الفئة",
+    "departmentChanged": "تم تغيير القسم",
+    "assigneeChanged": "تم تغيير المسؤول",
+    "escalated": "تم التصعيد",
+    "escalatedWithNote": "تم التصعيد: {note}",
+    "unescalated": "تم إلغاء التصعيد"
   },
   "users": {
     "title": "المستخدمون",

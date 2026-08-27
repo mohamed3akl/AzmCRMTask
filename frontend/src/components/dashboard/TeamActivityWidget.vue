@@ -2,7 +2,10 @@
   <v-card data-testid="team-activity-widget">
     <v-card-title>{{ $t('dashboard.teamActivity') }}</v-card-title>
     <v-card-text>
-      <v-list v-if="events.length" density="compact">
+      <v-alert v-if="error" type="error" density="compact" data-testid="widget-error">
+        {{ $t('dashboard.loadError') }}
+      </v-alert>
+      <v-list v-else-if="events.length" density="compact">
         <v-list-item v-for="event in events" :key="event.id" :title="describeEvent(event)" :subtitle="event.author.fullName" />
       </v-list>
       <p v-else class="text-medium-emphasis">{{ $t('dashboard.noActivity') }}</p>
@@ -12,26 +15,23 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { fetchRecentTicketEvents, type ApiRecentTicketEvent } from '../../api/tickets';
+import { describeTicketEvent } from '../../utils/ticketEventDescriptions';
 
+const { t } = useI18n();
 const events = ref<ApiRecentTicketEvent[]>([]);
-
-const eventDescriptions: Record<string, (event: ApiRecentTicketEvent) => string> = {
-  STATUS_CHANGED: (e) => `${e.ticket.subject}: status changed from ${e.oldValue} to ${e.newValue}`,
-  PRIORITY_CHANGED: (e) => `${e.ticket.subject}: priority changed from ${e.oldValue} to ${e.newValue}`,
-  CATEGORY_CHANGED: (e) => `${e.ticket.subject}: category changed`,
-  DEPARTMENT_CHANGED: (e) => `${e.ticket.subject}: department changed`,
-  ASSIGNEE_CHANGED: (e) => `${e.ticket.subject}: assignee changed`,
-  ESCALATED: (e) => `${e.ticket.subject}: escalated`,
-  UNESCALATED: (e) => `${e.ticket.subject}: unescalated`,
-  NOTE_ADDED: (e) => `${e.ticket.subject}: note added`,
-};
+const error = ref(false);
 
 function describeEvent(event: ApiRecentTicketEvent): string {
-  return eventDescriptions[event.type]?.(event) ?? event.type;
+  return `${event.ticket.subject}: ${describeTicketEvent(event, t)}`;
 }
 
 onMounted(async () => {
-  events.value = await fetchRecentTicketEvents();
+  try {
+    events.value = await fetchRecentTicketEvents();
+  } catch {
+    error.value = true;
+  }
 });
 </script>

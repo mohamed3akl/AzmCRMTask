@@ -2,7 +2,10 @@
   <v-card data-testid="my-tickets-widget">
     <v-card-title>{{ $t('dashboard.myTickets') }}</v-card-title>
     <v-card-text>
-      <v-list v-if="tickets.length" density="compact">
+      <v-alert v-if="error" type="error" density="compact" data-testid="widget-error">
+        {{ $t('dashboard.loadError') }}
+      </v-alert>
+      <v-list v-else-if="tickets.length" density="compact">
         <v-list-item
           v-for="ticket in tickets"
           :key="ticket.id"
@@ -23,9 +26,14 @@ import { useAuthStore } from '../../stores/auth';
 
 const auth = useAuthStore();
 const tickets = ref<ApiTicketSummary[]>([]);
+const error = ref(false);
 
 onMounted(async () => {
-  const all = await fetchTickets({ assigneeId: auth.currentUser!.id });
-  tickets.value = all.filter((t) => t.status !== 'CLOSED');
+  try {
+    const all = await fetchTickets({ assigneeId: auth.currentUser!.id });
+    tickets.value = all.filter((t) => t.status !== 'CLOSED');
+  } catch {
+    error.value = true;
+  }
 });
 </script>

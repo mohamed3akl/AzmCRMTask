@@ -2,7 +2,10 @@
   <v-card data-testid="unassigned-queue-widget">
     <v-card-title>{{ $t('dashboard.unassignedQueue') }}</v-card-title>
     <v-card-text>
-      <v-list v-if="tickets.length" density="compact">
+      <v-alert v-if="error" type="error" density="compact" data-testid="widget-error">
+        {{ $t('dashboard.loadError') }}
+      </v-alert>
+      <v-list v-else-if="tickets.length" density="compact">
         <v-list-item
           v-for="ticket in tickets"
           :key="ticket.id"
@@ -21,8 +24,13 @@ import { ref, onMounted } from 'vue';
 import { fetchTickets, type ApiTicketSummary } from '../../api/tickets';
 
 const tickets = ref<ApiTicketSummary[]>([]);
+const error = ref(false);
 
 onMounted(async () => {
-  tickets.value = await fetchTickets({ unassigned: true });
+  try {
+    tickets.value = await fetchTickets({ unassigned: true });
+  } catch {
+    error.value = true;
+  }
 });
 </script>

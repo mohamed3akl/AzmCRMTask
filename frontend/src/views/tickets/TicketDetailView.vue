@@ -129,11 +129,12 @@ import { fetchTicketCategories, type ApiTicketCategory } from '../../api/ticketC
 import { fetchDepartments, type ApiDepartment } from '../../api/departments';
 import { fetchUsers, type ApiUser } from '../../api/users';
 import { fetchQuickReplies, type ApiQuickReply } from '../../api/quickReplies';
+import { describeTicketEvent } from '../../utils/ticketEventDescriptions';
 import { useAuthStore } from '../../stores/auth';
 
 const route = useRoute();
 const auth = useAuthStore();
-const { locale } = useI18n();
+const { t, locale } = useI18n();
 const ticket = ref<ApiTicketDetail | null>(null);
 const categories = ref<ApiTicketCategory[]>([]);
 const departments = ref<ApiDepartment[]>([]);
@@ -151,22 +152,11 @@ const canReassignFreely = computed(
 );
 const isAssignedToMe = computed(() => ticket.value?.assignee?.id === auth.currentUser?.id);
 const quickReplyOptions = computed(() =>
-  quickReplies.value.map((r) => ({ id: r.id, title: r.titleEn }))
+  quickReplies.value.map((r) => ({ id: r.id, title: locale.value === 'ar' ? r.titleAr : r.titleEn }))
 );
 
-const eventDescriptions: Record<string, (event: ApiTicketEvent) => string> = {
-  STATUS_CHANGED: (e) => `Status changed from ${e.oldValue} to ${e.newValue}`,
-  PRIORITY_CHANGED: (e) => `Priority changed from ${e.oldValue} to ${e.newValue}`,
-  CATEGORY_CHANGED: () => 'Category changed',
-  DEPARTMENT_CHANGED: () => 'Department changed',
-  ASSIGNEE_CHANGED: () => 'Assignee changed',
-  ESCALATED: (e) => `Escalated${e.note ? `: ${e.note}` : ''}`,
-  UNESCALATED: () => 'Unescalated',
-  NOTE_ADDED: (e) => e.note ?? '',
-};
-
 function describeEvent(event: ApiTicketEvent): string {
-  return eventDescriptions[event.type]?.(event) ?? event.type;
+  return describeTicketEvent(event, t);
 }
 
 async function load() {

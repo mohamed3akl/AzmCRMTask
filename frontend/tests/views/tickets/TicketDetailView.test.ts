@@ -195,6 +195,7 @@ describe('TicketDetailView', () => {
     await wrapper.vm.$nextTick();
     const option = wrapper.find('[data-testid="quick-reply-option-qr1"]');
     expect(option.exists()).toBe(true);
+    expect(option.text()).toContain('ترحيب');
     await option.trigger('click');
     await wrapper.vm.$nextTick();
 

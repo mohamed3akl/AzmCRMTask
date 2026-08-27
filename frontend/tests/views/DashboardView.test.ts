@@ -100,11 +100,74 @@ describe('DashboardView', () => {
     await wrapper.find('[data-testid="new-task-title"] input').setValue('Follow up');
     await wrapper.find('[data-testid="add-task-form"]').trigger('submit.prevent');
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(createTask).toHaveBeenCalledWith({ title: 'Follow up' });
+    expect(createTask).toHaveBeenCalledWith({ title: 'Follow up', dueAt: null, ticketId: null });
 
     await wrapper.find('[data-testid="task-done-task1"]').trigger('click');
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(updateTask).toHaveBeenCalledWith('task1', { isDone: true });
+  });
+
+  it('lets the user set a due date when adding a task', async () => {
+    loginAs('AGENT');
+    vi.mocked(createTask).mockResolvedValue({
+      id: 'task3',
+      title: 'Follow up',
+      dueAt: '2026-09-01T10:00:00.000Z',
+      isDone: false,
+      ownerId: 'me',
+      ticketId: null,
+    });
+
+    const wrapper = mountWithPlugins(DashboardView, {}, dashboardRoutes);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    await wrapper.find('[data-testid="new-task-title"] input').setValue('Follow up');
+    await wrapper.find('[data-testid="new-task-due-at"] input').setValue('2026-09-01T10:00');
+    await wrapper.find('[data-testid="add-task-form"]').trigger('submit.prevent');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(createTask).toHaveBeenCalledWith({
+      title: 'Follow up',
+      dueAt: new Date('2026-09-01T10:00').toISOString(),
+      ticketId: null,
+    });
+  });
+
+  it('shows a task\'s due date and linked ticket subject', async () => {
+    loginAs('AGENT');
+    vi.mocked(fetchTickets).mockResolvedValue([
+      {
+        id: 'ticket-1',
+        subject: 'Payment issue',
+        status: 'OPEN',
+        priority: 'MEDIUM',
+        isEscalated: false,
+        customer: { id: 'c1', fullName: 'Jane Customer' },
+        category: null,
+        department: null,
+        assignee: null,
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+    vi.mocked(fetchTasks).mockResolvedValue([
+      {
+        id: 'task4',
+        title: 'Call about payment',
+        dueAt: '2026-09-01T10:00:00.000Z',
+        isDone: false,
+        ownerId: 'me',
+        ticketId: 'ticket-1',
+      },
+    ]);
+
+    const wrapper = mountWithPlugins(DashboardView, {}, dashboardRoutes);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    const widget = wrapper.find('[data-testid="my-tasks-widget"]');
+    expect(widget.text()).toContain('Call about payment');
+    expect(widget.text()).toContain('Payment issue');
   });
 
   it('renders recent team activity', async () => {
@@ -203,5 +266,87 @@ describe('DashboardView', () => {
     expect(wrapper.find('[data-testid="unassigned-queue-widget"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="escalated-tickets-widget"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="team-workload-widget"]').exists()).toBe(false);
+  });
+
+  it('shows an error state in My Tickets when the ticket fetch fails', async () => {
+    loginAs('AGENT');
+    vi.mocked(fetchTickets).mockRejectedValue(new Error('network error'));
+
+    const wrapper = mountWithPlugins(DashboardView, {}, dashboardRoutes);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    const widget = wrapper.find('[data-testid="my-tickets-widget"]');
+    expect(widget.find('[data-testid="widget-error"]').exists()).toBe(true);
+    expect(widget.text()).not.toContain('No tickets assigned to you.');
+  });
+
+  it('shows error states across all supervisor widgets when their fetches fail', async () => {
+    loginAs('SUPERVISOR');
+    vi.mocked(fetchTickets).mockRejectedValue(new Error('network error'));
+    vi.mocked(fetchTasks).mockRejectedValue(new Error('network error'));
+    vi.mocked(fetchRecentTicketEvents).mockRejectedValue(new Error('network error'));
+
+    const wrapper = mountWithPlugins(DashboardView, {}, dashboardRoutes);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    for (const testid of [
+      'my-tickets-widget',
+      'my-tasks-widget',
+      'team-activity-widget',
+      'unassigned-queue-widget',
+      'escalated-tickets-widget',
+      'team-workload-widget',
+    ]) {
+      expect(wrapper.find(`[data-testid="${testid}"] [data-testid="widget-error"]`).exists()).toBe(true);
+    }
+  });
+
+  it('keeps two same-named agents as separate workload rows', async () => {
+    loginAs('SUPERVISOR');
+    vi.mocked(fetchTickets).mockImplementation(async (filters = {}) => {
+      if (filters.unassigned || filters.escalated) return [];
+      if (filters.status === 'OPEN') {
+        return [
+          {
+            id: 'w1',
+            subject: 'Ticket A',
+            status: 'OPEN',
+            priority: 'MEDIUM',
+            isEscalated: false,
+            customer: { id: 'c1', fullName: 'Cust A' },
+            category: null,
+            department: null,
+            assignee: { id: 'agentA', fullName: 'Agent Same Name', role: 'AGENT' },
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: 'w2',
+            subject: 'Ticket B',
+            status: 'OPEN',
+            priority: 'MEDIUM',
+            isEscalated: false,
+            customer: { id: 'c2', fullName: 'Cust B' },
+            category: null,
+            department: null,
+            assignee: { id: 'agentB', fullName: 'Agent Same Name', role: 'AGENT' },
+            createdAt: new Date().toISOString(),
+          },
+        ];
+      }
+      return [];
+    });
+
+    const wrapper = mountWithPlugins(DashboardView, {}, dashboardRoutes);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    const rowA = wrapper.find('[data-testid="workload-row-agentA"]');
+    const rowB = wrapper.find('[data-testid="workload-row-agentB"]');
+    expect(rowA.exists()).toBe(true);
+    expect(rowB.exists()).toBe(true);
+    expect(rowA.text()).toContain('1');
+    expect(rowB.text()).toContain('1');
   });
 });

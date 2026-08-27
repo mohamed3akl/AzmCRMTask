@@ -1,7 +1,6 @@
 {
   "nav": { "home": "Home", "tickets": "Tickets", "users": "Users", "departments": "Departments", "ticketCategories": "Ticket Categories", "quickReplies": "Quick Replies", "logout": "Logout" },
   "login": { "title": "Sign in", "email": "Email", "password": "Password", "submit": "Sign in", "error": "Invalid email or password" },
-  "home": { "welcome": "Welcome, {name}" },
   "dashboard": {
     "title": "Dashboard",
     "myTickets": "My Tickets",
@@ -15,12 +14,26 @@
     "escalatedTickets": "Escalated Tickets",
     "noEscalated": "No escalated tickets.",
     "teamWorkload": "Team Workload",
-    "noWorkload": "No open tickets."
+    "noWorkload": "No open tickets.",
+    "loadError": "Something went wrong loading this data.",
+    "unassignedLabel": "Unassigned"
   },
   "tasks": {
     "newTask": "New task",
     "add": "Add",
-    "markDone": "Done"
+    "markDone": "Done",
+    "dueDate": "Due date",
+    "linkTicket": "Link to ticket (optional)"
+  },
+  "ticketEvents": {
+    "statusChanged": "Status changed from {old} to {new}",
+    "priorityChanged": "Priority changed from {old} to {new}",
+    "categoryChanged": "Category changed",
+    "departmentChanged": "Department changed",
+    "assigneeChanged": "Assignee changed",
+    "escalated": "Escalated",
+    "escalatedWithNote": "Escalated: {note}",
+    "unescalated": "Unescalated"
   },
   "users": {
     "title": "Users",
