@@ -1,10 +1,25 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import request from 'supertest';
-import { createApp } from '../../src/app';
+import type { Express } from 'express';
 import { prisma } from '../../src/lib/prisma';
 import { hashPassword } from '../../src/lib/password';
 
-const app = createApp();
+// The public ticket endpoint enforces a real rate limit of 5 requests per 15
+// minutes (see publicTickets.routes.ts), and that limiter is a module-level
+// singleton tied to whichever Express app instance imported it. This file
+// posts to the endpoint from six separate tests; sharing one `app` (and thus
+// one limiter) across all of them would let earlier tests' requests count
+// against later ones and trip the real limit once a sixth request is sent.
+// Get a fresh module graph (and therefore a fresh, untouched rate limiter)
+// before every test, the same way tests/setup.ts resets shared Postgres
+// state between tests, so each test's request is evaluated independently.
+let app: Express;
+
+beforeEach(async () => {
+  vi.resetModules();
+  const { createApp } = await import('../../src/app');
+  app = createApp();
+});
 
 describe('POST /api/public/tickets', () => {
   it('creates a customer and ticket from an email submission, with no auth required', async () => {

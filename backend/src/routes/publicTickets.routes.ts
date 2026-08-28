@@ -16,9 +16,7 @@ const createPublicTicketSchema = z
     message: 'Provide at least one of email or phone',
   });
 
-// Use a higher limit in test mode to avoid test isolation issues
-const rateLimitMax = process.env.NODE_ENV === 'test' ? 1000 : 5;
-const publicTicketRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: rateLimitMax });
+const publicTicketRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 5 });
 
 export const publicTicketsRouter = Router();
 
