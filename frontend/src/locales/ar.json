@@ -15,6 +15,8 @@
     "noEscalated": "لا توجد تذاكر مصعدة.",
     "teamWorkload": "أعباء عمل الفريق",
     "noWorkload": "لا توجد تذاكر مفتوحة.",
+    "breachedTickets": "التذاكر المخالفة لاتفاقية الخدمة",
+    "noBreached": "لا توجد تذاكر مخالفة.",
     "loadError": "حدث خطأ أثناء تحميل هذه البيانات.",
     "unassignedLabel": "غير مسند"
   },

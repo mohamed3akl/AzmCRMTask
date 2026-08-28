@@ -266,6 +266,7 @@ describe('DashboardView', () => {
     expect(wrapper.find('[data-testid="unassigned-queue-widget"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="escalated-tickets-widget"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="team-workload-widget"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="breached-tickets-widget"]').exists()).toBe(false);
   });
 
   it('shows an error state in My Tickets when the ticket fetch fails', async () => {
@@ -298,6 +299,7 @@ describe('DashboardView', () => {
       'unassigned-queue-widget',
       'escalated-tickets-widget',
       'team-workload-widget',
+      'breached-tickets-widget',
     ]) {
       expect(wrapper.find(`[data-testid="${testid}"] [data-testid="widget-error"]`).exists()).toBe(true);
     }
@@ -348,5 +350,54 @@ describe('DashboardView', () => {
     expect(rowB.exists()).toBe(true);
     expect(rowA.text()).toContain('1');
     expect(rowB.text()).toContain('1');
+  });
+
+  it('shows only breached tickets in the Breached Tickets widget for a supervisor', async () => {
+    loginAs('SUPERVISOR');
+    vi.mocked(fetchTickets).mockImplementation(async (filters = {}) => {
+      if (filters.unassigned || filters.escalated || filters.status) return [];
+      return [
+        {
+          id: 'b1',
+          subject: 'Breached ticket',
+          status: 'OPEN',
+          priority: 'URGENT',
+          isEscalated: false,
+          customer: { id: 'c1', fullName: 'Breached Customer' },
+          category: null,
+          department: null,
+          assignee: null,
+          createdAt: new Date().toISOString(),
+          sla: {
+            response: { dueAt: new Date(Date.now() - 60_000).toISOString(), respondedAt: null, status: 'BREACHED' },
+            resolution: { dueAt: new Date(Date.now() + 60_000).toISOString(), resolvedAt: null, status: 'PENDING' },
+          },
+        },
+        {
+          id: 'ok1',
+          subject: 'On track ticket',
+          status: 'OPEN',
+          priority: 'LOW',
+          isEscalated: false,
+          customer: { id: 'c2', fullName: 'OnTrack Customer' },
+          category: null,
+          department: null,
+          assignee: null,
+          createdAt: new Date().toISOString(),
+          sla: {
+            response: { dueAt: new Date(Date.now() + 60_000).toISOString(), respondedAt: null, status: 'PENDING' },
+            resolution: { dueAt: new Date(Date.now() + 120_000).toISOString(), resolvedAt: null, status: 'PENDING' },
+          },
+        },
+      ];
+    });
+
+    const wrapper = mountWithPlugins(DashboardView, {}, dashboardRoutes);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    const widget = wrapper.find('[data-testid="breached-tickets-widget"]');
+    expect(widget.text()).toContain('Breached ticket');
+    expect(widget.text()).not.toContain('On track ticket');
   });
 });

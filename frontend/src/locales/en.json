@@ -15,6 +15,8 @@
     "noEscalated": "No escalated tickets.",
     "teamWorkload": "Team Workload",
     "noWorkload": "No open tickets.",
+    "breachedTickets": "Breached Tickets",
+    "noBreached": "No breached tickets.",
     "loadError": "Something went wrong loading this data.",
     "unassignedLabel": "Unassigned"
   },

@@ -25,6 +25,11 @@
         <TeamWorkloadWidget />
       </v-col>
     </v-row>
+    <v-row v-if="isSupervisorOrAdmin">
+      <v-col cols="12">
+        <BreachedTicketsWidget />
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -36,6 +41,7 @@ import TeamActivityWidget from '../components/dashboard/TeamActivityWidget.vue';
 import UnassignedQueueWidget from '../components/dashboard/UnassignedQueueWidget.vue';
 import EscalatedTicketsWidget from '../components/dashboard/EscalatedTicketsWidget.vue';
 import TeamWorkloadWidget from '../components/dashboard/TeamWorkloadWidget.vue';
+import BreachedTicketsWidget from '../components/dashboard/BreachedTicketsWidget.vue';
 import { useAuthStore } from '../stores/auth';
 
 const auth = useAuthStore();
