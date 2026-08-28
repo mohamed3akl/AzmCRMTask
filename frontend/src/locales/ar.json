@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "الرئيسية", "tickets": "التذاكر", "users": "المستخدمون", "departments": "الأقسام", "ticketCategories": "فئات التذاكر", "quickReplies": "الردود السريعة", "slaTargets": "أهداف اتفاقية مستوى الخدمة", "logout": "تسجيل الخروج" },
+  "nav": { "home": "الرئيسية", "tickets": "التذاكر", "customers": "العملاء", "users": "المستخدمون", "departments": "الأقسام", "ticketCategories": "فئات التذاكر", "quickReplies": "الردود السريعة", "slaTargets": "أهداف اتفاقية مستوى الخدمة", "logout": "تسجيل الخروج" },
   "login": { "title": "تسجيل الدخول", "email": "البريد الإلكتروني", "password": "كلمة المرور", "submit": "تسجيل الدخول", "error": "بريد إلكتروني أو كلمة مرور غير صحيحة" },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -63,6 +63,20 @@
     "responseMinutes": "هدف الاستجابة (دقائق)",
     "resolutionMinutes": "هدف الحل (دقائق)",
     "saveError": "حدث خطأ أثناء حفظ هذا الهدف. يرجى المحاولة مرة أخرى."
+  },
+  "customers": {
+    "title": "العملاء",
+    "create": "عميل جديد",
+    "search": "بحث عن عملاء",
+    "fullName": "الاسم الكامل",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "save": "حفظ",
+    "saveError": "حدث خطأ أثناء حفظ بيانات العميل. يرجى المحاولة مرة أخرى.",
+    "viewExisting": "عرض العميل الحالي",
+    "edit": "تعديل",
+    "ticketHistory": "سجل التذاكر",
+    "noTickets": "لا توجد تذاكر بعد."
   },
   "widget": {
     "title": "تواصل معنا",

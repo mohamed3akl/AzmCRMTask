@@ -12,6 +12,7 @@ import TicketListView from '../views/tickets/TicketListView.vue';
 import TicketCreateView from '../views/tickets/TicketCreateView.vue';
 import TicketDetailView from '../views/tickets/TicketDetailView.vue';
 import WidgetEmbedView from '../views/WidgetEmbedView.vue';
+import CustomerListView from '../views/customers/CustomerListView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -27,6 +28,7 @@ const router = createRouter({
         { path: 'tickets', name: 'tickets', component: TicketListView },
         { path: 'tickets/new', name: 'ticket-new', component: TicketCreateView },
         { path: 'tickets/:id', name: 'ticket-detail', component: TicketDetailView },
+        { path: 'customers', name: 'customers', component: CustomerListView },
         { path: 'users', name: 'users', component: UserListView, meta: { roles: ['ADMIN'] } },
         { path: 'departments', name: 'departments', component: DepartmentListView, meta: { roles: ['ADMIN'] } },
         {

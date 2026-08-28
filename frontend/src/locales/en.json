@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "Home", "tickets": "Tickets", "users": "Users", "departments": "Departments", "ticketCategories": "Ticket Categories", "quickReplies": "Quick Replies", "slaTargets": "SLA Targets", "logout": "Logout" },
+  "nav": { "home": "Home", "tickets": "Tickets", "customers": "Customers", "users": "Users", "departments": "Departments", "ticketCategories": "Ticket Categories", "quickReplies": "Quick Replies", "slaTargets": "SLA Targets", "logout": "Logout" },
   "login": { "title": "Sign in", "email": "Email", "password": "Password", "submit": "Sign in", "error": "Invalid email or password" },
   "dashboard": {
     "title": "Dashboard",
@@ -63,6 +63,20 @@
     "responseMinutes": "Response target (minutes)",
     "resolutionMinutes": "Resolution target (minutes)",
     "saveError": "Something went wrong saving this target. Please try again."
+  },
+  "customers": {
+    "title": "Customers",
+    "create": "New Customer",
+    "search": "Search customers",
+    "fullName": "Full name",
+    "email": "Email",
+    "phone": "Phone",
+    "save": "Save",
+    "saveError": "Something went wrong saving this customer. Please try again.",
+    "viewExisting": "View existing customer",
+    "edit": "Edit",
+    "ticketHistory": "Ticket History",
+    "noTickets": "No tickets yet."
   },
   "widget": {
     "title": "Contact us",
