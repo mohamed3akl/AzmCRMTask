@@ -5,12 +5,13 @@ import { attachSlaStatus } from '../services/sla.service';
 
 export async function listTicketsHandler(req: Request, res: Response, next: NextFunction) {
   try {
-    const { status, assigneeId, departmentId, categoryId, unassigned, escalated } = req.query;
+    const { status, assigneeId, departmentId, categoryId, customerId, unassigned, escalated } = req.query;
     const tickets = await ticketsService.listTickets({
       status: status as TicketStatus | undefined,
       assigneeId: assigneeId as string | undefined,
       departmentId: departmentId as string | undefined,
       categoryId: categoryId as string | undefined,
+      customerId: customerId as string | undefined,
       unassigned: unassigned === 'true',
       escalated: escalated === 'true',
     });

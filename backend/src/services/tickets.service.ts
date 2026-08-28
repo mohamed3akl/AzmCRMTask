@@ -1,6 +1,7 @@
 import { Prisma, Role, TicketEventType, TicketPriority, TicketSource, TicketStatus } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { HttpError } from '../lib/httpError';
+import { findExistingCustomerByContact } from './customers.service';
 
 const ticketInclude = {
   customer: true,
@@ -26,6 +27,7 @@ export async function listTickets(filters: {
   assigneeId?: string;
   departmentId?: string;
   categoryId?: string;
+  customerId?: string;
   unassigned?: boolean;
   escalated?: boolean;
 }): Promise<TicketWithRelations[]> {
@@ -35,6 +37,7 @@ export async function listTickets(filters: {
       assigneeId: filters.unassigned ? null : filters.assigneeId,
       departmentId: filters.departmentId,
       categoryId: filters.categoryId,
+      customerId: filters.customerId,
       isEscalated: filters.escalated ? true : undefined,
     },
     include: ticketInclude,
@@ -97,8 +100,8 @@ export async function createTicket(
 ): Promise<TicketDetail> {
   let customerId = data.customerId;
   if (!customerId && data.newCustomer) {
-    const customer = await prisma.customer.create({ data: data.newCustomer });
-    customerId = customer.id;
+    const existingCustomer = await findExistingCustomerByContact(data.newCustomer);
+    customerId = existingCustomer ? existingCustomer.id : (await prisma.customer.create({ data: data.newCustomer })).id;
   }
   if (!customerId) {
     throw new HttpError(400, 'CUSTOMER_REQUIRED', 'Provide customerId or newCustomer');

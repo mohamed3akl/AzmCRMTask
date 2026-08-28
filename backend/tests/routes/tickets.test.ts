@@ -501,6 +501,81 @@ describe('GET /api/tickets filters', () => {
   });
 });
 
+describe('customer deduplication on ticket creation', () => {
+  it('reuses an existing customer when the newCustomer email matches', async () => {
+    const { token } = await createStaff('AGENT', 'dedup-creator@example.com');
+    const existing = await prisma.customer.create({ data: { fullName: 'Jane Original', email: 'jane@example.com' } });
+
+    const res = await request(app)
+      .post('/api/tickets')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ subject: 'Ticket', description: 'Desc', newCustomer: { fullName: 'Jane Typo', email: 'jane@example.com' } });
+
+    expect(res.status).toBe(201);
+    expect(res.body.customer.id).toBe(existing.id);
+    expect(await prisma.customer.count()).toBe(1);
+  });
+
+  it('reuses an existing customer when the newCustomer phone matches', async () => {
+    const { token } = await createStaff('AGENT', 'dedup-creator2@example.com');
+    const existing = await prisma.customer.create({ data: { fullName: 'Bob Original', phone: '555-0100' } });
+
+    const res = await request(app)
+      .post('/api/tickets')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ subject: 'Ticket', description: 'Desc', newCustomer: { fullName: 'Bob Typo', phone: '555-0100' } });
+
+    expect(res.status).toBe(201);
+    expect(res.body.customer.id).toBe(existing.id);
+  });
+
+  it('creates a new customer when neither email nor phone matches an existing one', async () => {
+    const { token } = await createStaff('AGENT', 'dedup-creator3@example.com');
+    await prisma.customer.create({ data: { fullName: 'Unrelated', email: 'unrelated@example.com' } });
+
+    const res = await request(app)
+      .post('/api/tickets')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ subject: 'Ticket', description: 'Desc', newCustomer: { fullName: 'Brand New', email: 'brand-new@example.com' } });
+
+    expect(res.status).toBe(201);
+    expect(await prisma.customer.count()).toBe(2);
+  });
+
+  it('always creates a new customer when neither email nor phone is provided', async () => {
+    const { token } = await createStaff('AGENT', 'dedup-creator4@example.com');
+    await prisma.customer.create({ data: { fullName: 'Existing Walk-in' } });
+
+    const res = await request(app)
+      .post('/api/tickets')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ subject: 'Ticket', description: 'Desc', newCustomer: { fullName: 'Another Walk-in' } });
+
+    expect(res.status).toBe(201);
+    expect(await prisma.customer.count()).toBe(2);
+  });
+});
+
+describe('GET /api/tickets?customerId=', () => {
+  it('filters tickets by customer', async () => {
+    const { user, token } = await createStaff('AGENT', 'customer-filter@example.com');
+    const customerA = await createCustomerFixture();
+    const customerB = await prisma.customer.create({ data: { fullName: 'Other Customer', email: 'other@example.com' } });
+    await prisma.ticket.create({
+      data: { subject: 'For A', description: 'Desc', customerId: customerA.id, createdById: user.id },
+    });
+    await prisma.ticket.create({
+      data: { subject: 'For B', description: 'Desc', customerId: customerB.id, createdById: user.id },
+    });
+
+    const res = await request(app).get(`/api/tickets?customerId=${customerA.id}`).set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].subject).toBe('For A');
+  });
+});
+
 describe('automatic assignment on ticket creation', () => {
   it('assigns a new ticket to the only active agent in its department', async () => {
     const department = await prisma.department.create({ data: { nameEn: 'Support', nameAr: 'الدعم' } });

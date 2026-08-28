@@ -79,4 +79,20 @@ describe('POST /api/public/tickets', () => {
     const ticket = await prisma.ticket.findFirst({ where: { subject: 'Cannot log in' } });
     expect(ticket?.assigneeId).toBe(orgAgent.id);
   });
+
+  it('reuses an existing customer when the email matches', async () => {
+    const existing = await prisma.customer.create({ data: { fullName: 'Existing Customer', email: 'jane@example.com' } });
+
+    const res = await request(app).post('/api/public/tickets').send({
+      fullName: 'Jane Typo',
+      email: 'jane@example.com',
+      subject: 'Cannot log in',
+      description: 'Getting an error on login',
+    });
+
+    expect(res.status).toBe(201);
+    const ticket = await prisma.ticket.findFirst({ where: { subject: 'Cannot log in' } });
+    expect(ticket?.customerId).toBe(existing.id);
+    expect(await prisma.customer.count()).toBe(1);
+  });
 });

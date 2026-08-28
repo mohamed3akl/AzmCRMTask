@@ -9,5 +9,8 @@ export default defineConfig({
     // beforeEach truncation/insert interleaving with another's). Force
     // sequential execution to keep the shared DB state deterministic.
     fileParallelism: false,
+    env: {
+      NODE_ENV: 'test',
+    },
   },
 });
