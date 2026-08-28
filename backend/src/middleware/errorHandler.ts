@@ -3,7 +3,7 @@ import { HttpError } from '../lib/httpError';
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof HttpError) {
-    res.status(err.statusCode).json({ error: { code: err.code, message: err.message } });
+    res.status(err.statusCode).json({ error: { code: err.code, message: err.message }, ...err.details });
     return;
   }
   console.error(err);

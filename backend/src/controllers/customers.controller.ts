@@ -9,3 +9,27 @@ export async function searchCustomersHandler(req: Request, res: Response, next: 
     next(err);
   }
 }
+
+export async function getCustomerHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json(await customersService.getCustomerById(req.params.id as string));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function createCustomerHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.status(201).json(await customersService.createCustomer(req.body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function updateCustomerHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json(await customersService.updateCustomer(req.params.id as string, req.body));
+  } catch (err) {
+    next(err);
+  }
+}
