@@ -1,20 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
 import { TicketStatus } from '@prisma/client';
 import * as ticketsService from '../services/tickets.service';
+import { attachSlaStatus } from '../services/sla.service';
 
 export async function listTicketsHandler(req: Request, res: Response, next: NextFunction) {
   try {
     const { status, assigneeId, departmentId, categoryId, unassigned, escalated } = req.query;
-    res.json(
-      await ticketsService.listTickets({
-        status: status as TicketStatus | undefined,
-        assigneeId: assigneeId as string | undefined,
-        departmentId: departmentId as string | undefined,
-        categoryId: categoryId as string | undefined,
-        unassigned: unassigned === 'true',
-        escalated: escalated === 'true',
-      })
-    );
+    const tickets = await ticketsService.listTickets({
+      status: status as TicketStatus | undefined,
+      assigneeId: assigneeId as string | undefined,
+      departmentId: departmentId as string | undefined,
+      categoryId: categoryId as string | undefined,
+      unassigned: unassigned === 'true',
+      escalated: escalated === 'true',
+    });
+    res.json(await attachSlaStatus(tickets));
   } catch (err) {
     next(err);
   }
@@ -22,7 +22,9 @@ export async function listTicketsHandler(req: Request, res: Response, next: Next
 
 export async function getTicketHandler(req: Request, res: Response, next: NextFunction) {
   try {
-    res.json(await ticketsService.getTicketById(req.params.id as string));
+    const ticket = await ticketsService.getTicketById(req.params.id as string);
+    const [withSla] = await attachSlaStatus([ticket]);
+    res.json(withSla);
   } catch (err) {
     next(err);
   }

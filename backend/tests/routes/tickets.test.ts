@@ -420,6 +420,39 @@ describe('POST /api/tickets/:id/notes', () => {
   });
 });
 
+describe('ticket SLA status', () => {
+  it('includes computed sla status when a target exists for the ticket priority', async () => {
+    const { user, token } = await createStaff('AGENT', 'sla-agent@example.com');
+    const customer = await createCustomerFixture();
+    await prisma.slaTarget.create({ data: { priority: 'MEDIUM', responseMinutes: 240, resolutionMinutes: 1440 } });
+    const ticket = await prisma.ticket.create({
+      data: { subject: 'Ticket', description: 'Desc', customerId: customer.id, createdById: user.id, priority: 'MEDIUM' },
+    });
+
+    const listRes = await request(app).get('/api/tickets').set('Authorization', `Bearer ${token}`);
+    expect(listRes.status).toBe(200);
+    const listed = listRes.body.find((t: { id: string }) => t.id === ticket.id);
+    expect(listed.sla.response.status).toBe('PENDING');
+    expect(listed.sla.resolution.status).toBe('PENDING');
+
+    const detailRes = await request(app).get(`/api/tickets/${ticket.id}`).set('Authorization', `Bearer ${token}`);
+    expect(detailRes.status).toBe(200);
+    expect(detailRes.body.sla.response.dueAt).toEqual(expect.any(String));
+  });
+
+  it('returns sla: null when no target exists for the ticket priority', async () => {
+    const { user, token } = await createStaff('AGENT', 'sla-agent2@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: { subject: 'Ticket', description: 'Desc', customerId: customer.id, createdById: user.id, priority: 'URGENT' },
+    });
+
+    const res = await request(app).get(`/api/tickets/${ticket.id}`).set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.sla).toBeNull();
+  });
+});
+
 describe('GET /api/tickets filters', () => {
   it('filters unassigned tickets', async () => {
     const { user, token } = await createStaff('AGENT', 'filter1@example.com');
