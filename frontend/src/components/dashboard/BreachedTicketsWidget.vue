@@ -32,8 +32,11 @@ function isBreached(ticket: ApiTicketSummary): boolean {
 
 onMounted(async () => {
   try {
-    const all = await fetchTickets({});
-    tickets.value = all.filter(isBreached);
+    const [open, inProgress] = await Promise.all([
+      fetchTickets({ status: 'OPEN' }),
+      fetchTickets({ status: 'IN_PROGRESS' }),
+    ]);
+    tickets.value = [...open, ...inProgress].filter(isBreached);
   } catch {
     error.value = true;
   }

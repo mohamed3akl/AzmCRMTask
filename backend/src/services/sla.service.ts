@@ -64,7 +64,8 @@ export async function attachSlaStatus<T extends TicketForSla>(
     const responseDueAt = new Date(ticket.createdAt.getTime() + target.responseMinutes * 60_000);
     const resolutionDueAt = new Date(ticket.createdAt.getTime() + target.resolutionMinutes * 60_000);
     const respondedAt = firstResponseByTicket.get(ticket.id) ?? null;
-    const resolvedAt = resolutionByTicket.get(ticket.id) ?? null;
+    const isTerminal = ticket.status === 'RESOLVED' || ticket.status === 'CLOSED';
+    const resolvedAt = isTerminal ? (resolutionByTicket.get(ticket.id) ?? null) : null;
 
     const sla: SlaStatus = {
       response: {

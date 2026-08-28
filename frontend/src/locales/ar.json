@@ -61,7 +61,8 @@
     "title": "أهداف اتفاقية مستوى الخدمة",
     "editTitle": "تعديل هدف {priority}",
     "responseMinutes": "هدف الاستجابة (دقائق)",
-    "resolutionMinutes": "هدف الحل (دقائق)"
+    "resolutionMinutes": "هدف الحل (دقائق)",
+    "saveError": "حدث خطأ أثناء حفظ هذا الهدف. يرجى المحاولة مرة أخرى."
   },
   "widget": {
     "title": "تواصل معنا",

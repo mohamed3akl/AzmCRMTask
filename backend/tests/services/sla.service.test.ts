@@ -142,6 +142,52 @@ describe('attachSlaStatus', () => {
     expect(result.sla!.resolution.status).toBe('BREACHED');
   });
 
+  it('does not report a stale MET resolution clock for a ticket that was resolved on time and then reopened', async () => {
+    await seedTarget('MEDIUM', 240, 60);
+    const staff = await createStaff();
+    const customer = await createCustomerFixture();
+    // Created far enough in the past that, once the resolution timestamp is
+    // disregarded (because the ticket is no longer terminal), the resolution
+    // due time has unambiguously passed relative to "now".
+    const ticket = await prisma.ticket.create({
+      data: {
+        subject: 'Test',
+        description: 'Test',
+        customerId: customer.id,
+        createdById: staff.id,
+        priority: 'MEDIUM',
+        status: 'OPEN', // reopened after having been resolved
+        createdAt: new Date(Date.now() - 120 * 60_000),
+      },
+    });
+    // Resolved on time shortly after creation...
+    await prisma.ticketEvent.create({
+      data: {
+        ticketId: ticket.id,
+        type: 'STATUS_CHANGED',
+        oldValue: 'OPEN',
+        newValue: 'RESOLVED',
+        authorId: staff.id,
+        createdAt: new Date(Date.now() - 110 * 60_000),
+      },
+    });
+    // ...then reopened, moving the ticket back to a non-terminal status.
+    await prisma.ticketEvent.create({
+      data: {
+        ticketId: ticket.id,
+        type: 'STATUS_CHANGED',
+        oldValue: 'RESOLVED',
+        newValue: 'OPEN',
+        authorId: staff.id,
+        createdAt: new Date(Date.now() - 100 * 60_000),
+      },
+    });
+
+    const [result] = await attachSlaStatus([ticket]);
+    expect(result.sla!.resolution.resolvedAt).toBeNull();
+    expect(result.sla!.resolution.status).toBe('BREACHED');
+  });
+
   it('computes sla status independently for multiple tickets in a single call', async () => {
     await seedTarget('LOW', 480, 4320);
     const staff = await createStaff();

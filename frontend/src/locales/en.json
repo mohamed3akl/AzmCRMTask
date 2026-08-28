@@ -61,7 +61,8 @@
     "title": "SLA Targets",
     "editTitle": "Edit {priority} target",
     "responseMinutes": "Response target (minutes)",
-    "resolutionMinutes": "Resolution target (minutes)"
+    "resolutionMinutes": "Resolution target (minutes)",
+    "saveError": "Something went wrong saving this target. Please try again."
   },
   "widget": {
     "title": "Contact us",

@@ -22,9 +22,9 @@
         <v-chip v-if="item.isEscalated" color="error" size="small">{{ $t('tickets.escalated') }}</v-chip>
       </template>
       <template #item.sla="{ item }">
-        <v-chip v-if="slaStatusLabel(item)" :color="slaStatusColor(item)" size="small">
-          {{ slaStatusLabel(item) }}
-        </v-chip>
+        <template v-for="chip in [slaChip(item)]" :key="item.id">
+          <v-chip v-if="chip" :color="chip.color" size="small">{{ chip.label }}</v-chip>
+        </template>
       </template>
     </v-data-table>
   </v-container>
@@ -68,23 +68,14 @@ function worstSlaClock(ticket: ApiTicketSummary): WorstClock | null {
   return { status: 'MET', dueAt: response.dueAt };
 }
 
-function slaStatusLabel(ticket: ApiTicketSummary): string | null {
+function slaChip(ticket: ApiTicketSummary): { label: string; color: string } | null {
   const worst = worstSlaClock(ticket);
   if (!worst) return null;
-  if (worst.status === 'MET') return t('tickets.slaMet');
-  if (worst.status === 'PENDING') {
-    const minutes = Math.round((new Date(worst.dueAt).getTime() - Date.now()) / 60000);
-    return minutes >= 0 ? t('tickets.slaMinutesLeft', { minutes }) : t('tickets.slaBreached');
-  }
-  return t('tickets.slaBreached');
-}
-
-function slaStatusColor(ticket: ApiTicketSummary): string {
-  const worst = worstSlaClock(ticket);
-  if (!worst) return 'default';
-  if (worst.status === 'BREACHED') return 'error';
-  if (worst.status === 'MET') return 'success';
-  return 'default';
+  if (worst.status === 'BREACHED') return { label: t('tickets.slaBreached'), color: 'error' };
+  if (worst.status === 'MET') return { label: t('tickets.slaMet'), color: 'success' };
+  const minutes = Math.round((new Date(worst.dueAt).getTime() - Date.now()) / 60000);
+  if (minutes < 0) return { label: t('tickets.slaBreached'), color: 'error' };
+  return { label: t('tickets.slaMinutesLeft', { minutes }), color: 'default' };
 }
 
 async function load() {

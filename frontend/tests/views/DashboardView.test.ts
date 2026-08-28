@@ -352,41 +352,84 @@ describe('DashboardView', () => {
     expect(rowB.text()).toContain('1');
   });
 
-  it('shows only breached tickets in the Breached Tickets widget for a supervisor', async () => {
+  it('shows only breached tickets in the Breached Tickets widget for a supervisor, fetched from active statuses only', async () => {
     loginAs('SUPERVISOR');
     vi.mocked(fetchTickets).mockImplementation(async (filters = {}) => {
-      if (filters.unassigned || filters.escalated || filters.status) return [];
+      if (filters.unassigned || filters.escalated) return [];
+      if (filters.status === 'OPEN') {
+        return [
+          {
+            id: 'b1',
+            subject: 'Breached ticket',
+            status: 'OPEN',
+            priority: 'URGENT',
+            isEscalated: false,
+            customer: { id: 'c1', fullName: 'Breached Customer' },
+            category: null,
+            department: null,
+            assignee: null,
+            createdAt: new Date().toISOString(),
+            sla: {
+              response: { dueAt: new Date(Date.now() - 60_000).toISOString(), respondedAt: null, status: 'BREACHED' },
+              resolution: { dueAt: new Date(Date.now() + 60_000).toISOString(), resolvedAt: null, status: 'PENDING' },
+            },
+          },
+          {
+            id: 'ok1',
+            subject: 'On track ticket',
+            status: 'OPEN',
+            priority: 'LOW',
+            isEscalated: false,
+            customer: { id: 'c2', fullName: 'OnTrack Customer' },
+            category: null,
+            department: null,
+            assignee: null,
+            createdAt: new Date().toISOString(),
+            sla: {
+              response: { dueAt: new Date(Date.now() + 60_000).toISOString(), respondedAt: null, status: 'PENDING' },
+              resolution: { dueAt: new Date(Date.now() + 120_000).toISOString(), resolvedAt: null, status: 'PENDING' },
+            },
+          },
+        ];
+      }
+      if (filters.status === 'IN_PROGRESS') return [];
+      return [];
+    });
+
+    const wrapper = mountWithPlugins(DashboardView, {}, dashboardRoutes);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    const widget = wrapper.find('[data-testid="breached-tickets-widget"]');
+    expect(widget.text()).toContain('Breached ticket');
+    expect(widget.text()).not.toContain('On track ticket');
+    expect(fetchTickets).toHaveBeenCalledWith({ status: 'OPEN' });
+    expect(fetchTickets).toHaveBeenCalledWith({ status: 'IN_PROGRESS' });
+  });
+
+  it('excludes a RESOLVED ticket with a stale BREACHED sla status from the Breached Tickets widget', async () => {
+    loginAs('SUPERVISOR');
+    vi.mocked(fetchTickets).mockImplementation(async (filters = {}) => {
+      if (filters.unassigned || filters.escalated) return [];
+      // A resolved ticket is never returned by the OPEN/IN_PROGRESS status-filtered
+      // fetches the widget now performs, even though it may still carry a BREACHED
+      // sla status from before it was resolved.
+      if (filters.status === 'OPEN' || filters.status === 'IN_PROGRESS') return [];
       return [
         {
-          id: 'b1',
-          subject: 'Breached ticket',
-          status: 'OPEN',
+          id: 'resolved-breached',
+          subject: 'Old resolved breach',
+          status: 'RESOLVED',
           priority: 'URGENT',
           isEscalated: false,
-          customer: { id: 'c1', fullName: 'Breached Customer' },
+          customer: { id: 'c3', fullName: 'Resolved Customer' },
           category: null,
           department: null,
           assignee: null,
           createdAt: new Date().toISOString(),
           sla: {
             response: { dueAt: new Date(Date.now() - 60_000).toISOString(), respondedAt: null, status: 'BREACHED' },
-            resolution: { dueAt: new Date(Date.now() + 60_000).toISOString(), resolvedAt: null, status: 'PENDING' },
-          },
-        },
-        {
-          id: 'ok1',
-          subject: 'On track ticket',
-          status: 'OPEN',
-          priority: 'LOW',
-          isEscalated: false,
-          customer: { id: 'c2', fullName: 'OnTrack Customer' },
-          category: null,
-          department: null,
-          assignee: null,
-          createdAt: new Date().toISOString(),
-          sla: {
-            response: { dueAt: new Date(Date.now() + 60_000).toISOString(), respondedAt: null, status: 'PENDING' },
-            resolution: { dueAt: new Date(Date.now() + 120_000).toISOString(), resolvedAt: null, status: 'PENDING' },
+            resolution: { dueAt: new Date(Date.now() - 30_000).toISOString(), resolvedAt: null, status: 'BREACHED' },
           },
         },
       ];
@@ -397,7 +440,7 @@ describe('DashboardView', () => {
     await wrapper.vm.$nextTick();
 
     const widget = wrapper.find('[data-testid="breached-tickets-widget"]');
-    expect(widget.text()).toContain('Breached ticket');
-    expect(widget.text()).not.toContain('On track ticket');
+    expect(widget.text()).not.toContain('Old resolved breach');
+    expect(widget.text()).toContain('No breached tickets.');
   });
 });

@@ -22,7 +22,8 @@
               type="number"
               :label="$t('slaTargets.resolutionMinutes')"
             />
-            <v-btn type="submit" color="primary">Save</v-btn>
+            <p v-if="error" data-testid="sla-target-error" class="text-error mb-2">{{ error }}</p>
+            <v-btn type="submit" color="primary" :disabled="!isFormValid">Save</v-btn>
           </form>
         </v-card-text>
       </v-card>
@@ -31,12 +32,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+import axios from 'axios';
 import { fetchSlaTargets, updateSlaTarget, type ApiSlaTarget, type TicketPriority } from '../../api/slaTargets';
+
+const { t } = useI18n();
 
 const targets = ref<ApiSlaTarget[]>([]);
 const dialogOpen = ref(false);
 const editingPriority = ref<TicketPriority | null>(null);
+const error = ref('');
 
 const headers = [
   { title: 'Priority', key: 'priority' },
@@ -47,6 +53,21 @@ const headers = [
 
 const form = reactive({ responseMinutes: 0, resolutionMinutes: 0 });
 
+function isPositiveInteger(value: number): boolean {
+  return Number.isInteger(value) && value > 0;
+}
+
+const isFormValid = computed(
+  () => isPositiveInteger(form.responseMinutes) && isPositiveInteger(form.resolutionMinutes)
+);
+
+function extractBackendErrorMessage(err: unknown): string | undefined {
+  if (axios.isAxiosError(err)) {
+    return err.response?.data?.error?.message;
+  }
+  return undefined;
+}
+
 async function load() {
   targets.value = await fetchSlaTargets();
 }
@@ -54,14 +75,20 @@ async function load() {
 function openEdit(item: ApiSlaTarget) {
   editingPriority.value = item.priority;
   Object.assign(form, { responseMinutes: item.responseMinutes, resolutionMinutes: item.resolutionMinutes });
+  error.value = '';
   dialogOpen.value = true;
 }
 
 async function submit() {
-  if (!editingPriority.value) return;
-  await updateSlaTarget(editingPriority.value, { ...form });
-  dialogOpen.value = false;
-  await load();
+  error.value = '';
+  if (!editingPriority.value || !isFormValid.value) return;
+  try {
+    await updateSlaTarget(editingPriority.value, { ...form });
+    dialogOpen.value = false;
+    await load();
+  } catch (err) {
+    error.value = extractBackendErrorMessage(err) ?? t('slaTargets.saveError');
+  }
 }
 
 onMounted(load);
