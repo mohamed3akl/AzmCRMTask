@@ -216,4 +216,25 @@ describe('TicketDetailView', () => {
 
     expect(wrapper.text()).toContain('Cannot log in');
   });
+
+  it('shows the response and resolution SLA breakdown when sla data is present', async () => {
+    vi.mocked(fetchTicket).mockResolvedValue({
+      ...baseTicket,
+      sla: {
+        response: { dueAt: '2026-08-27T05:00:00.000Z', respondedAt: null, status: 'BREACHED' },
+        resolution: { dueAt: '2026-08-28T00:00:00.000Z', resolvedAt: null, status: 'PENDING' },
+      },
+    });
+
+    const wrapper = mountWithPlugins(
+      TicketDetailView,
+      { global: { mocks: { $route: { params: { id: 'ticket-1' } } } } },
+      [{ path: '/', component: { template: '<div />' } }]
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.text()).toContain('SLA Breached');
+    expect(wrapper.text()).toContain('Pending');
+  });
 });

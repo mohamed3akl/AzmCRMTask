@@ -104,6 +104,10 @@
     "insertQuickReply": "إدراج رد سريع",
     "slaMet": "تم الوفاء باتفاقية مستوى الخدمة",
     "slaBreached": "تم خرق اتفاقية مستوى الخدمة",
-    "slaMinutesLeft": "متبقي {minutes} د"
+    "slaMinutesLeft": "متبقي {minutes} د",
+    "slaPending": "قيد الانتظار",
+    "slaResponse": "الاستجابة",
+    "slaResolution": "الحل",
+    "slaDueAt": "الموعد النهائي"
   }
 }

@@ -95,6 +95,29 @@
           <v-list-item :title="$t('tickets.customer')" :subtitle="ticket.customer.fullName" />
           <v-list-item :title="$t('tickets.createdBy')" :subtitle="ticket.createdBy?.fullName ?? '-'" />
         </v-list>
+
+        <v-list v-if="ticket.sla" density="compact" class="mt-4">
+          <v-list-item :title="$t('tickets.slaResponse')">
+            <template #subtitle>
+              <v-chip size="small" :color="slaColor(ticket.sla.response.status)">
+                {{ slaLabel(ticket.sla.response.status) }}
+              </v-chip>
+              <span class="ml-2 text-caption">
+                {{ $t('tickets.slaDueAt') }}: {{ new Date(ticket.sla.response.dueAt).toLocaleString() }}
+              </span>
+            </template>
+          </v-list-item>
+          <v-list-item :title="$t('tickets.slaResolution')">
+            <template #subtitle>
+              <v-chip size="small" :color="slaColor(ticket.sla.resolution.status)">
+                {{ slaLabel(ticket.sla.resolution.status) }}
+              </v-chip>
+              <span class="ml-2 text-caption">
+                {{ $t('tickets.slaDueAt') }}: {{ new Date(ticket.sla.resolution.dueAt).toLocaleString() }}
+              </span>
+            </template>
+          </v-list-item>
+        </v-list>
       </v-col>
     </v-row>
 
@@ -124,6 +147,7 @@ import {
   type ApiTicketEvent,
   type TicketStatus,
   type TicketPriority,
+  type SlaClockStatus,
 } from '../../api/tickets';
 import { fetchTicketCategories, type ApiTicketCategory } from '../../api/ticketCategories';
 import { fetchDepartments, type ApiDepartment } from '../../api/departments';
@@ -157,6 +181,18 @@ const quickReplyOptions = computed(() =>
 
 function describeEvent(event: ApiTicketEvent): string {
   return describeTicketEvent(event, t);
+}
+
+function slaLabel(status: SlaClockStatus): string {
+  if (status === 'BREACHED') return t('tickets.slaBreached');
+  if (status === 'MET') return t('tickets.slaMet');
+  return t('tickets.slaPending');
+}
+
+function slaColor(status: SlaClockStatus): string {
+  if (status === 'BREACHED') return 'error';
+  if (status === 'MET') return 'success';
+  return 'default';
 }
 
 async function load() {

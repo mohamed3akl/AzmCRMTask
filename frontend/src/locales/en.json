@@ -104,6 +104,10 @@
     "insertQuickReply": "Insert quick reply",
     "slaMet": "SLA Met",
     "slaBreached": "SLA Breached",
-    "slaMinutesLeft": "{minutes}m left"
+    "slaMinutesLeft": "{minutes}m left",
+    "slaPending": "Pending",
+    "slaResponse": "Response",
+    "slaResolution": "Resolution",
+    "slaDueAt": "Due"
   }
 }
