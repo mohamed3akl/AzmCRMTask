@@ -11,6 +11,7 @@ import { tasksRouter } from './routes/tasks.routes';
 import { quickRepliesRouter } from './routes/quickReplies.routes';
 import { ticketEventsRouter } from './routes/ticketEvents.routes';
 import { publicTicketsRouter } from './routes/publicTickets.routes';
+import { slaTargetsRouter } from './routes/slaTargets.routes';
 
 export function createApp(): Express {
   const app = express();
@@ -31,6 +32,7 @@ export function createApp(): Express {
   app.use('/api/quick-replies', quickRepliesRouter);
   app.use('/api/ticket-events', ticketEventsRouter);
   app.use('/api/public/tickets', publicTicketsRouter);
+  app.use('/api/sla-targets', slaTargetsRouter);
 
   app.use(errorHandler);
   return app;

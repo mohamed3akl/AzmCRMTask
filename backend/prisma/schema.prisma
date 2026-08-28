@@ -100,6 +100,13 @@ model QuickReply {
   updatedAt DateTime @updatedAt
 }
 
+model SlaTarget {
+  priority          TicketPriority @id
+  responseMinutes   Int
+  resolutionMinutes Int
+  updatedAt         DateTime       @updatedAt
+}
+
 model Ticket {
   id           String         @id @default(uuid())
   subject      String
