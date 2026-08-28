@@ -12,6 +12,20 @@ export type TicketEventType =
   | 'UNESCALATED'
   | 'NOTE_ADDED';
 
+export type SlaClockStatus = 'PENDING' | 'MET' | 'BREACHED';
+
+export interface ApiSlaClock {
+  dueAt: string;
+  respondedAt?: string | null;
+  resolvedAt?: string | null;
+  status: SlaClockStatus;
+}
+
+export interface ApiSlaStatus {
+  response: ApiSlaClock;
+  resolution: ApiSlaClock;
+}
+
 export interface ApiTicketSummary {
   id: string;
   subject: string;
@@ -23,6 +37,7 @@ export interface ApiTicketSummary {
   department: { id: string; nameEn: string; nameAr: string } | null;
   assignee: { id: string; fullName: string; role: string } | null;
   createdAt: string;
+  sla?: ApiSlaStatus | null;
 }
 
 export interface ApiTicketEvent {

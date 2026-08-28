@@ -101,6 +101,9 @@
     "customerFullName": "Full name",
     "customerEmail": "Email",
     "customerPhone": "Phone",
-    "insertQuickReply": "Insert quick reply"
+    "insertQuickReply": "Insert quick reply",
+    "slaMet": "SLA Met",
+    "slaBreached": "SLA Breached",
+    "slaMinutesLeft": "{minutes}m left"
   }
 }
