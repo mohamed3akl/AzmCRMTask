@@ -85,12 +85,28 @@ function extractExistingCustomerId(err: unknown): string | undefined {
   return undefined;
 }
 
+const SEARCH_DEBOUNCE_MS = 300;
+let searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
+// Incremented on every search request so a slow, stale response can never
+// clobber the results of a newer one that already resolved.
+let searchRequestToken = 0;
+
 async function load() {
-  customers.value = await searchCustomers(query.value);
+  const requestToken = ++searchRequestToken;
+  const results = await searchCustomers(query.value);
+  if (requestToken === searchRequestToken) {
+    customers.value = results;
+  }
 }
 
 function onSearch() {
-  load();
+  if (searchDebounceTimer !== undefined) {
+    clearTimeout(searchDebounceTimer);
+  }
+  searchDebounceTimer = setTimeout(() => {
+    searchDebounceTimer = undefined;
+    load();
+  }, SEARCH_DEBOUNCE_MS);
 }
 
 function openCreate() {

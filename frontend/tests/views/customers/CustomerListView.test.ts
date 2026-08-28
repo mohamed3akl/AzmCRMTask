@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { mountWithPlugins } from '../../testUtils';
 
@@ -79,5 +79,82 @@ describe('CustomerListView', () => {
     const link = wrapper.find('[data-testid="customer-conflict-link"]');
     expect(link.exists()).toBe(true);
     expect(link.attributes('href')).toContain('/customers/c1');
+  });
+
+  describe('search debouncing', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('only issues one search request after rapid typing, for the final value', async () => {
+      vi.useFakeTimers();
+
+      const wrapper = mountWithPlugins(CustomerListView, {}, routes);
+      // Flush the initial (undebounced) mount load without advancing fake
+      // timers, since it doesn't go through the debounce timer.
+      await vi.advanceTimersByTimeAsync(0);
+      vi.mocked(searchCustomers).mockClear();
+
+      const input = wrapper.find('[data-testid="customer-search"] input');
+      await input.setValue('j');
+      await input.setValue('ja');
+      await input.setValue('jan');
+      await input.setValue('jane');
+
+      // Nothing should have fired yet: each keystroke should have reset the
+      // pending debounce timer rather than triggering a request immediately.
+      expect(searchCustomers).not.toHaveBeenCalled();
+
+      // Let the debounce delay elapse.
+      await vi.advanceTimersByTimeAsync(300);
+
+      expect(searchCustomers).toHaveBeenCalledTimes(1);
+      expect(searchCustomers).toHaveBeenCalledWith('jane');
+    });
+
+    it('applies only the latest response when an earlier request resolves out of order', async () => {
+      vi.useFakeTimers();
+
+      let resolveFirst: (value: unknown) => void = () => {};
+      let resolveSecond: (value: unknown) => void = () => {};
+      const firstPromise = new Promise((resolve) => {
+        resolveFirst = resolve;
+      });
+      const secondPromise = new Promise((resolve) => {
+        resolveSecond = resolve;
+      });
+
+      vi.mocked(searchCustomers).mockResolvedValueOnce([
+        { id: 'c1', fullName: 'Jane Customer', email: 'jane@example.com', phone: null },
+      ] as never);
+
+      const wrapper = mountWithPlugins(CustomerListView, {}, routes);
+      await vi.advanceTimersByTimeAsync(0);
+
+      vi.mocked(searchCustomers).mockClear();
+      vi.mocked(searchCustomers).mockReturnValueOnce(firstPromise as never);
+      vi.mocked(searchCustomers).mockReturnValueOnce(secondPromise as never);
+
+      const input = wrapper.find('[data-testid="customer-search"] input');
+
+      // First (slower) search: "ja"
+      await input.setValue('ja');
+      await vi.advanceTimersByTimeAsync(300);
+
+      // Second (faster) search: "jane", fired after the debounce for "ja" elapsed
+      await input.setValue('jane');
+      await vi.advanceTimersByTimeAsync(300);
+
+      expect(searchCustomers).toHaveBeenCalledTimes(2);
+
+      // Resolve the newer ("jane") request first, then the stale ("ja") one.
+      resolveSecond([{ id: 'c2', fullName: 'Jane Two', email: null, phone: null }]);
+      await vi.advanceTimersByTimeAsync(0);
+      resolveFirst([{ id: 'c1', fullName: 'Jane Customer', email: 'jane@example.com', phone: null }]);
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(wrapper.text()).toContain('Jane Two');
+      expect(wrapper.text()).not.toContain('Jane Customer');
+    });
   });
 });
