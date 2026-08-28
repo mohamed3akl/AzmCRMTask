@@ -92,7 +92,13 @@
         <v-btn v-else class="mt-4" block @click="unescalate">{{ $t('tickets.unescalate') }}</v-btn>
 
         <v-list density="compact" class="mt-4">
-          <v-list-item :title="$t('tickets.customer')" :subtitle="ticket.customer.fullName" />
+          <v-list-item :title="$t('tickets.customer')">
+            <template #subtitle>
+              <router-link :to="{ name: 'customer-detail', params: { id: ticket.customer.id } }">
+                {{ ticket.customer.fullName }}
+              </router-link>
+            </template>
+          </v-list-item>
           <v-list-item :title="$t('tickets.createdBy')" :subtitle="ticket.createdBy?.fullName ?? '-'" />
         </v-list>
 

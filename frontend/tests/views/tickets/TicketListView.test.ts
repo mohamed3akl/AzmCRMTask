@@ -33,6 +33,7 @@ describe('TicketListView', () => {
       { path: '/', component: { template: '<div />' } },
       { path: '/tickets/:id', name: 'ticket-detail', component: { template: '<div />' } },
       { path: '/tickets/new', name: 'ticket-new', component: { template: '<div />' } },
+      { path: '/customers/:id', name: 'customer-detail', component: { template: '<div />' } },
     ]);
     await new Promise((resolve) => setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
@@ -80,6 +81,7 @@ describe('TicketListView', () => {
       { path: '/', component: { template: '<div />' } },
       { path: '/tickets/:id', name: 'ticket-detail', component: { template: '<div />' } },
       { path: '/tickets/new', name: 'ticket-new', component: { template: '<div />' } },
+      { path: '/customers/:id', name: 'customer-detail', component: { template: '<div />' } },
     ]);
     await new Promise((resolve) => setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
@@ -114,6 +116,7 @@ describe('TicketListView', () => {
       { path: '/', component: { template: '<div />' } },
       { path: '/tickets/:id', name: 'ticket-detail', component: { template: '<div />' } },
       { path: '/tickets/new', name: 'ticket-new', component: { template: '<div />' } },
+      { path: '/customers/:id', name: 'customer-detail', component: { template: '<div />' } },
     ]);
     await new Promise((resolve) => setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
@@ -148,6 +151,7 @@ describe('TicketListView', () => {
       { path: '/', component: { template: '<div />' } },
       { path: '/tickets/:id', name: 'ticket-detail', component: { template: '<div />' } },
       { path: '/tickets/new', name: 'ticket-new', component: { template: '<div />' } },
+      { path: '/customers/:id', name: 'customer-detail', component: { template: '<div />' } },
     ]);
     await new Promise((resolve) => setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
@@ -156,5 +160,20 @@ describe('TicketListView', () => {
     expect(chip.exists()).toBe(true);
     expect(chip.text()).toContain('SLA Breached');
     expect(chip.classes().join(' ')).toContain('text-error');
+  });
+
+  it('links the customer name to their profile page', async () => {
+    const wrapper = mountWithPlugins(TicketListView, {}, [
+      { path: '/', component: { template: '<div />' } },
+      { path: '/tickets/:id', name: 'ticket-detail', component: { template: '<div />' } },
+      { path: '/tickets/new', name: 'ticket-new', component: { template: '<div />' } },
+      { path: '/customers/:id', name: 'customer-detail', component: { template: '<div />' } },
+    ]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    const link = wrapper.find('a[href="/customers/c1"]');
+    expect(link.exists()).toBe(true);
+    expect(link.text()).toBe('Jane Customer');
   });
 });

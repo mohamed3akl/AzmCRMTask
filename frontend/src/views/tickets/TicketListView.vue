@@ -16,7 +16,11 @@
     />
 
     <v-data-table :items="tickets" :headers="headers" @click:row="goToTicket">
-      <template #item.customer="{ item }">{{ item.customer.fullName }}</template>
+      <template #item.customer="{ item }">
+        <router-link :to="{ name: 'customer-detail', params: { id: item.customer.id } }" @click.stop>
+          {{ item.customer.fullName }}
+        </router-link>
+      </template>
       <template #item.assignee="{ item }">{{ item.assignee?.fullName ?? '-' }}</template>
       <template #item.isEscalated="{ item }">
         <v-chip v-if="item.isEscalated" color="error" size="small">{{ $t('tickets.escalated') }}</v-chip>

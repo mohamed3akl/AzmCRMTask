@@ -71,7 +71,7 @@ describe('TicketDetailView', () => {
     const wrapper = mountWithPlugins(
       TicketDetailView,
       { global: { mocks: { $route: { params: { id: 'ticket-1' } } } } },
-      [{ path: '/', component: { template: '<div />' } }]
+      [{ path: '/', component: { template: '<div />' } }, { path: '/customers/:id', name: 'customer-detail', component: { template: '<div />' } }]
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
@@ -79,6 +79,8 @@ describe('TicketDetailView', () => {
     expect(wrapper.text()).toContain('Cannot log in');
     expect(wrapper.text()).toContain('Jane Customer');
     expect(wrapper.text()).toContain('Called the customer back');
+    const link = wrapper.find('a[href="/customers/c1"]');
+    expect(link.exists()).toBe(true);
   });
 
   it('adds a note', async () => {
@@ -112,7 +114,7 @@ describe('TicketDetailView', () => {
     const wrapper = mountWithPlugins(
       TicketDetailView,
       { global: { mocks: { $route: { params: { id: 'ticket-1' } } } } },
-      [{ path: '/', component: { template: '<div />' } }]
+      [{ path: '/', component: { template: '<div />' } }, { path: '/customers/:id', name: 'customer-detail', component: { template: '<div />' } }]
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
@@ -144,7 +146,7 @@ describe('TicketDetailView', () => {
     const wrapper = mountWithPlugins(
       TicketDetailView,
       { global: { mocks: { $route: { params: { id: 'ticket-1' } } } } },
-      [{ path: '/', component: { template: '<div />' } }]
+      [{ path: '/', component: { template: '<div />' } }, { path: '/customers/:id', name: 'customer-detail', component: { template: '<div />' } }]
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
@@ -179,7 +181,7 @@ describe('TicketDetailView', () => {
     const wrapper = mountWithPlugins(
       TicketDetailView,
       { global: { mocks: { $route: { params: { id: 'ticket-1' } } } } },
-      [{ path: '/', component: { template: '<div />' } }]
+      [{ path: '/', component: { template: '<div />' } }, { path: '/customers/:id', name: 'customer-detail', component: { template: '<div />' } }]
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
@@ -209,7 +211,7 @@ describe('TicketDetailView', () => {
     const wrapper = mountWithPlugins(
       TicketDetailView,
       { global: { mocks: { $route: { params: { id: 'ticket-1' } } } } },
-      [{ path: '/', component: { template: '<div />' } }]
+      [{ path: '/', component: { template: '<div />' } }, { path: '/customers/:id', name: 'customer-detail', component: { template: '<div />' } }]
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
@@ -229,7 +231,7 @@ describe('TicketDetailView', () => {
     const wrapper = mountWithPlugins(
       TicketDetailView,
       { global: { mocks: { $route: { params: { id: 'ticket-1' } } } } },
-      [{ path: '/', component: { template: '<div />' } }]
+      [{ path: '/', component: { template: '<div />' } }, { path: '/customers/:id', name: 'customer-detail', component: { template: '<div />' } }]
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
