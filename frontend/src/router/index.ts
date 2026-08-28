@@ -7,6 +7,7 @@ import UserListView from '../views/users/UserListView.vue';
 import DepartmentListView from '../views/departments/DepartmentListView.vue';
 import TicketCategoryListView from '../views/ticketCategories/TicketCategoryListView.vue';
 import QuickReplyListView from '../views/quickReplies/QuickReplyListView.vue';
+import SlaTargetListView from '../views/slaTargets/SlaTargetListView.vue';
 import TicketListView from '../views/tickets/TicketListView.vue';
 import TicketCreateView from '../views/tickets/TicketCreateView.vue';
 import TicketDetailView from '../views/tickets/TicketDetailView.vue';
@@ -38,6 +39,12 @@ const router = createRouter({
           path: 'quick-replies',
           name: 'quick-replies',
           component: QuickReplyListView,
+          meta: { roles: ['ADMIN'] },
+        },
+        {
+          path: 'sla-targets',
+          name: 'sla-targets',
+          component: SlaTargetListView,
           meta: { roles: ['ADMIN'] },
         },
       ],

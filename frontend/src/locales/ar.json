@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "الرئيسية", "tickets": "التذاكر", "users": "المستخدمون", "departments": "الأقسام", "ticketCategories": "فئات التذاكر", "quickReplies": "الردود السريعة", "logout": "تسجيل الخروج" },
+  "nav": { "home": "الرئيسية", "tickets": "التذاكر", "users": "المستخدمون", "departments": "الأقسام", "ticketCategories": "فئات التذاكر", "quickReplies": "الردود السريعة", "slaTargets": "أهداف اتفاقية مستوى الخدمة", "logout": "تسجيل الخروج" },
   "login": { "title": "تسجيل الدخول", "email": "البريد الإلكتروني", "password": "كلمة المرور", "submit": "تسجيل الدخول", "error": "بريد إلكتروني أو كلمة مرور غير صحيحة" },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -54,6 +54,12 @@
     "titleAr": "العنوان (عربي)",
     "bodyEn": "النص (إنجليزي)",
     "bodyAr": "النص (عربي)"
+  },
+  "slaTargets": {
+    "title": "أهداف اتفاقية مستوى الخدمة",
+    "editTitle": "تعديل هدف {priority}",
+    "responseMinutes": "هدف الاستجابة (دقائق)",
+    "resolutionMinutes": "هدف الحل (دقائق)"
   },
   "widget": {
     "title": "تواصل معنا",

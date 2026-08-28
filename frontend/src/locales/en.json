@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "Home", "tickets": "Tickets", "users": "Users", "departments": "Departments", "ticketCategories": "Ticket Categories", "quickReplies": "Quick Replies", "logout": "Logout" },
+  "nav": { "home": "Home", "tickets": "Tickets", "users": "Users", "departments": "Departments", "ticketCategories": "Ticket Categories", "quickReplies": "Quick Replies", "slaTargets": "SLA Targets", "logout": "Logout" },
   "login": { "title": "Sign in", "email": "Email", "password": "Password", "submit": "Sign in", "error": "Invalid email or password" },
   "dashboard": {
     "title": "Dashboard",
@@ -54,6 +54,12 @@
     "titleAr": "Title (Arabic)",
     "bodyEn": "Body (English)",
     "bodyAr": "Body (Arabic)"
+  },
+  "slaTargets": {
+    "title": "SLA Targets",
+    "editTitle": "Edit {priority} target",
+    "responseMinutes": "Response target (minutes)",
+    "resolutionMinutes": "Resolution target (minutes)"
   },
   "widget": {
     "title": "Contact us",
