@@ -50,6 +50,38 @@ export async function getTicketById(id: string): Promise<TicketDetail> {
   return ticket;
 }
 
+async function pickAutoAssignee(departmentId: string | null): Promise<string | null> {
+  let candidates = await prisma.user.findMany({
+    where: { role: 'AGENT', isActive: true, ...(departmentId ? { departmentId } : {}) },
+    select: { id: true },
+  });
+  if (departmentId && candidates.length === 0) {
+    candidates = await prisma.user.findMany({
+      where: { role: 'AGENT', isActive: true },
+      select: { id: true },
+    });
+  }
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  const counts = await prisma.ticket.groupBy({
+    by: ['assigneeId'],
+    where: {
+      assigneeId: { in: candidates.map((c) => c.id) },
+      status: { in: ['OPEN', 'IN_PROGRESS'] },
+    },
+    _count: true,
+  });
+  const countByAgent = new Map(counts.map((c) => [c.assigneeId as string, c._count]));
+
+  const sorted = [...candidates].sort((a, b) => {
+    const diff = (countByAgent.get(a.id) ?? 0) - (countByAgent.get(b.id) ?? 0);
+    return diff !== 0 ? diff : a.id.localeCompare(b.id);
+  });
+  return sorted[0].id;
+}
+
 export async function createTicket(
   data: {
     subject: string;
@@ -72,16 +104,20 @@ export async function createTicket(
     throw new HttpError(400, 'CUSTOMER_REQUIRED', 'Provide customerId or newCustomer');
   }
 
+  const departmentId = data.departmentId ?? null;
+  const assigneeId = await pickAutoAssignee(departmentId);
+
   const ticket = await prisma.ticket.create({
     data: {
       subject: data.subject,
       description: data.description,
       customerId,
       categoryId: data.categoryId ?? null,
-      departmentId: data.departmentId ?? null,
+      departmentId,
       priority: data.priority ?? 'MEDIUM',
       createdById: createdById ?? null,
       source,
+      assigneeId,
     },
   });
 

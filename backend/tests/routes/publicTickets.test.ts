@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../../src/app';
 import { prisma } from '../../src/lib/prisma';
+import { hashPassword } from '../../src/lib/password';
 
 const app = createApp();
 
@@ -55,5 +56,27 @@ describe('POST /api/public/tickets', () => {
       email: 'missing@example.com',
     });
     expect(res.status).toBe(400);
+  });
+
+  it('auto-assigns a ticket created via the public web form', async () => {
+    const orgAgent = await prisma.user.create({
+      data: {
+        email: 'web-org-agent@example.com',
+        passwordHash: await hashPassword('password123'),
+        fullName: 'Org Agent',
+        role: 'AGENT',
+      },
+    });
+
+    const res = await request(app).post('/api/public/tickets').send({
+      fullName: 'Web Customer',
+      email: 'web-customer@example.com',
+      subject: 'Cannot log in',
+      description: 'Getting an error',
+    });
+
+    expect(res.status).toBe(201);
+    const ticket = await prisma.ticket.findFirst({ where: { subject: 'Cannot log in' } });
+    expect(ticket?.assigneeId).toBe(orgAgent.id);
   });
 });

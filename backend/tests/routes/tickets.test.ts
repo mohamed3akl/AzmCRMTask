@@ -8,13 +8,14 @@ import type { Role } from '@prisma/client';
 
 const app = createApp();
 
-async function createStaff(role: Role, email: string) {
+async function createStaff(role: Role, email: string, departmentId?: string) {
   const user = await prisma.user.create({
     data: {
       email,
       passwordHash: await hashPassword('password123'),
       fullName: `${role} User`,
       role,
+      departmentId,
     },
   });
   const token = signToken({ sub: user.id, role: user.role, departmentId: user.departmentId });
@@ -497,5 +498,132 @@ describe('GET /api/tickets filters', () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
     expect(res.body[0].subject).toBe('Escalated');
+  });
+});
+
+describe('automatic assignment on ticket creation', () => {
+  it('assigns a new ticket to the only active agent in its department', async () => {
+    const department = await prisma.department.create({ data: { nameEn: 'Support', nameAr: 'الدعم' } });
+    const { user: agent } = await createStaff('AGENT', 'auto-agent@example.com', department.id);
+    const { token: creatorToken } = await createStaff('SUPERVISOR', 'auto-creator@example.com');
+    const customer = await createCustomerFixture();
+
+    const res = await request(app)
+      .post('/api/tickets')
+      .set('Authorization', `Bearer ${creatorToken}`)
+      .send({ subject: 'Ticket', description: 'Desc', customerId: customer.id, departmentId: department.id });
+
+    expect(res.status).toBe(201);
+    expect(res.body.assignee.id).toBe(agent.id);
+  });
+
+  it('assigns to the least-busy agent when the department has multiple active agents', async () => {
+    const department = await prisma.department.create({ data: { nameEn: 'Support', nameAr: 'الدعم' } });
+    const { user: busyAgent } = await createStaff('AGENT', 'busy-agent@example.com', department.id);
+    const { user: freeAgent } = await createStaff('AGENT', 'free-agent@example.com', department.id);
+    const { token: creatorToken } = await createStaff('SUPERVISOR', 'auto-creator2@example.com');
+    const customer = await createCustomerFixture();
+
+    await prisma.ticket.create({
+      data: { subject: 'Existing 1', description: 'Desc', customerId: customer.id, assigneeId: busyAgent.id, status: 'OPEN' },
+    });
+    await prisma.ticket.create({
+      data: { subject: 'Existing 2', description: 'Desc', customerId: customer.id, assigneeId: busyAgent.id, status: 'IN_PROGRESS' },
+    });
+
+    const res = await request(app)
+      .post('/api/tickets')
+      .set('Authorization', `Bearer ${creatorToken}`)
+      .send({ subject: 'New ticket', description: 'Desc', customerId: customer.id, departmentId: department.id });
+
+    expect(res.status).toBe(201);
+    expect(res.body.assignee.id).toBe(freeAgent.id);
+  });
+
+  it('falls back to an org-wide active agent when the ticket department has none', async () => {
+    const emptyDept = await prisma.department.create({ data: { nameEn: 'Empty', nameAr: 'فارغ' } });
+    const { user: orgAgent } = await createStaff('AGENT', 'org-agent@example.com');
+    const { token: creatorToken } = await createStaff('SUPERVISOR', 'auto-creator3@example.com');
+    const customer = await createCustomerFixture();
+
+    const res = await request(app)
+      .post('/api/tickets')
+      .set('Authorization', `Bearer ${creatorToken}`)
+      .send({ subject: 'Ticket', description: 'Desc', customerId: customer.id, departmentId: emptyDept.id });
+
+    expect(res.status).toBe(201);
+    expect(res.body.assignee.id).toBe(orgAgent.id);
+  });
+
+  it('uses the org-wide pool when the ticket has no department', async () => {
+    const { user: orgAgent } = await createStaff('AGENT', 'org-agent2@example.com');
+    const { token: creatorToken } = await createStaff('SUPERVISOR', 'auto-creator4@example.com');
+    const customer = await createCustomerFixture();
+
+    const res = await request(app)
+      .post('/api/tickets')
+      .set('Authorization', `Bearer ${creatorToken}`)
+      .send({ subject: 'Ticket', description: 'Desc', customerId: customer.id });
+
+    expect(res.status).toBe(201);
+    expect(res.body.assignee.id).toBe(orgAgent.id);
+  });
+
+  it('creates the ticket unassigned when there are no eligible agents anywhere', async () => {
+    const { token: creatorToken } = await createStaff('SUPERVISOR', 'auto-creator5@example.com');
+    const customer = await createCustomerFixture();
+
+    const res = await request(app)
+      .post('/api/tickets')
+      .set('Authorization', `Bearer ${creatorToken}`)
+      .send({ subject: 'Ticket', description: 'Desc', customerId: customer.id });
+
+    expect(res.status).toBe(201);
+    expect(res.body.assignee).toBeNull();
+  });
+
+  it('excludes inactive agents and non-AGENT roles from the candidate pool', async () => {
+    const department = await prisma.department.create({ data: { nameEn: 'Support', nameAr: 'الدعم' } });
+    const inactiveAgent = await prisma.user.create({
+      data: {
+        email: 'inactive-agent@example.com',
+        passwordHash: await hashPassword('password123'),
+        fullName: 'Inactive Agent',
+        role: 'AGENT',
+        departmentId: department.id,
+        isActive: false,
+      },
+    });
+    const { user: supervisorInDept } = await createStaff('SUPERVISOR', 'dept-supervisor@example.com', department.id);
+    const { user: orgAgent } = await createStaff('AGENT', 'org-agent3@example.com');
+    const { token: creatorToken } = await createStaff('ADMIN', 'auto-creator6@example.com');
+    const customer = await createCustomerFixture();
+
+    const res = await request(app)
+      .post('/api/tickets')
+      .set('Authorization', `Bearer ${creatorToken}`)
+      .send({ subject: 'Ticket', description: 'Desc', customerId: customer.id, departmentId: department.id });
+
+    expect(res.status).toBe(201);
+    expect(res.body.assignee.id).toBe(orgAgent.id);
+    expect(res.body.assignee.id).not.toBe(inactiveAgent.id);
+    expect(res.body.assignee.id).not.toBe(supervisorInDept.id);
+  });
+
+  it('does not re-run auto-assignment when a ticket is released back to unassigned', async () => {
+    const { user: agent, token: agentToken } = await createStaff('AGENT', 'release-agent@example.com');
+    await createStaff('AGENT', 'other-agent@example.com');
+    const customer = await createCustomerFixture();
+    const ticket = await prisma.ticket.create({
+      data: { subject: 'Ticket', description: 'Desc', customerId: customer.id, assigneeId: agent.id },
+    });
+
+    const res = await request(app)
+      .post(`/api/tickets/${ticket.id}/assign`)
+      .set('Authorization', `Bearer ${agentToken}`)
+      .send({ assigneeId: null });
+
+    expect(res.status).toBe(200);
+    expect(res.body.assignee).toBeNull();
   });
 });
